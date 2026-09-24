@@ -12,10 +12,10 @@ const cities = [
 export default function Locations() {
   return (
     <section
-      className="bg-[#f9fafb] text-gray-900 py-20 px-6 lg:px-10 relative overflow-hidden"
+      className="bg-[#f9fafb] text-gray-900 py-20 relative overflow-hidden"
       id="lokasi"
     >
-      <div className="max-w-[1400px] mx-auto w-full relative z-10">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full relative z-10">
         <div className="grid lg:grid-cols-12 gap-8 items-center">
           {/* Left Content */}
           <div className="lg:col-span-3">

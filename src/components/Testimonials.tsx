@@ -23,8 +23,8 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section className="bg-[#f9fafb] text-gray-900 py-20 px-6 lg:px-10" id="testimoni">
-      <div className="max-w-[1400px] mx-auto w-full">
+    <section className="bg-[#f9fafb] text-gray-900 py-20" id="testimoni">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>

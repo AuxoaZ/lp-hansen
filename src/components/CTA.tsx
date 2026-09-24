@@ -2,8 +2,8 @@ import { FiArrowRight } from "react-icons/fi";
 
 export default function CTA() {
   return (
-    <section className="relative py-24 px-6 lg:px-10 bg-white">
-      <div className="max-w-[1200px] mx-auto w-full">
+    <section className="relative py-24 bg-white">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
         <div className="bg-gradient-to-br from-[#00152e] to-[#002855] rounded-3xl p-12 md:p-16 lg:p-20 shadow-2xl flex flex-col items-center text-center">
           
           <h4 className="text-[#dbae6b] tracking-widest text-xs font-bold uppercase mb-4">

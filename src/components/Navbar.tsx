@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,32 +25,52 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {/* Logo Placeholder */}
+        <Link href="/" className="flex items-center gap-3 group">
+          {/* Logo Hansen Image with White Filter */}
+          <Image
+            src="/logo-hansen.png"
+            alt="Hansen Projects Logo"
+            width={40}
+            height={40}
+            className="h-9 w-auto object-contain brightness-0 invert transition-opacity group-hover:opacity-90"
+            priority
+          />
           <div className="flex flex-col">
             <span className="text-2xl font-bold tracking-widest text-primary uppercase leading-none font-serif">
               Hansen
             </span>
-            <span className="text-[10px] tracking-[0.3em] text-foreground uppercase mt-1">
+            <span className="text-[10px] tracking-[0.3em] text-center text-foreground uppercase mt-1">
               Projects
             </span>
           </div>
-        </div>
+        </Link>
 
         <nav className="hidden lg:flex items-center gap-6 text-xs font-medium">
           <Link href="/" className="hover:text-primary transition-colors">
             Beranda
           </Link>
-          <Link href="/tentang-kami" className="hover:text-primary transition-colors">
+          <Link
+            href="/tentang-kami"
+            className="hover:text-primary transition-colors"
+          >
             Tentang Kami
           </Link>
-          <Link href="/#layanan" className="hover:text-primary transition-colors">
+          <Link
+            href="/layanan"
+            className="hover:text-primary transition-colors"
+          >
             Layanan
           </Link>
-          <Link href="/#portofolio" className="hover:text-primary transition-colors">
+          <Link
+            href="/portofolio"
+            className="hover:text-primary transition-colors"
+          >
             Portofolio
           </Link>
-          <Link href="#kontak" className="hover:text-primary transition-colors">
+          <Link
+            href="#kontak-kami"
+            className="hover:text-primary transition-colors"
+          >
             Kontak
           </Link>
         </nav>

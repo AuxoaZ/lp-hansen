@@ -2,8 +2,8 @@ import { FiInstagram, FiFacebook, FiLinkedin, FiMail, FiPhone, FiMapPin } from "
 
 export default function Footer() {
   return (
-    <footer className="bg-[#000d1c] text-white pt-20 pb-8 px-6 lg:px-10">
-      <div className="max-w-[1400px] mx-auto w-full">
+    <footer className="bg-[#000d1c] text-white pt-20 pb-8">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           
           {/* Col 1: Brand */}

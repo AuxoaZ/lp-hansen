@@ -25,8 +25,8 @@ const values = [
 
 export default function AboutValues() {
   return (
-    <section className="bg-[#f9fafb] text-gray-900 py-24 px-6 lg:px-10">
-      <div className="max-w-[1400px] mx-auto w-full">
+    <section className="bg-[#f9fafb] text-gray-900 py-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
         
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-8 mb-16">

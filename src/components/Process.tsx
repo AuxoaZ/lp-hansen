@@ -49,8 +49,8 @@ const steps = [
 
 export default function Process() {
   return (
-    <section className="bg-[#f9fafb] text-gray-900 py-20 px-6 lg:px-10" id="proses">
-      <div className="max-w-[1400px] mx-auto w-full">
+    <section className="bg-[#f9fafb] text-gray-900 py-20" id="proses">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div>
@@ -61,7 +61,8 @@ export default function Process() {
               <div className="w-16 h-[2px] bg-primary"></div>
             </div>
             <p className="text-gray-600 text-sm max-w-xl">
-              Proses yang jelas dan terstruktur untuk memastikan hasil terbaik bagi proyek Anda.
+              Proses yang jelas dan terstruktur untuk memastikan hasil terbaik
+              bagi proyek Anda.
             </p>
           </div>
           <a
@@ -81,7 +82,10 @@ export default function Process() {
                   <div className="w-10 h-10 rounded-full bg-[#dbae6b] text-white flex items-center justify-center font-bold text-sm shadow-sm">
                     {step.num}
                   </div>
-                  <step.Icon className="text-3xl text-[#002044]" strokeWidth={1.5} />
+                  <step.Icon
+                    className="text-3xl text-[#002044]"
+                    strokeWidth={1.5}
+                  />
                 </div>
                 <h3 className="text-[#002044] font-bold text-base mb-2">
                   {step.title}

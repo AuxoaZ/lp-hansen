@@ -6,10 +6,12 @@ import Styles from "@/components/Styles";
 import Projects from "@/components/Projects";
 import Testimonials from "@/components/Testimonials";
 import Locations from "@/components/Locations";
-import ParallaxDivider from "@/components/ParallaxDivider";
 import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
+import ServicesParallax from "@/components/ServicesParallax";
+import ContactSection from "@/components/ContactSection";
+import MapSection from "@/components/MapSection";
 
 export default function Home() {
   return (
@@ -22,8 +24,12 @@ export default function Home() {
       <Projects />
       <Testimonials />
       <Locations />
-      <ParallaxDivider />
+      <ServicesParallax />
       <FAQ />
+      {/* Contact Section with Left Info & Right Form */}
+      <ContactSection />
+      {/* Google Maps Embed Section */}
+      <MapSection />
       <CTA />
       <Footer />
     </div>

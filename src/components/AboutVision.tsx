@@ -2,8 +2,8 @@ import { FiTarget, FiFlag } from "react-icons/fi";
 
 export default function AboutVision() {
   return (
-    <section className="bg-[#002044] text-white py-24 px-6 lg:px-10">
-      <div className="max-w-[1400px] mx-auto w-full grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+    <section className="bg-[#002044] text-white py-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
         
         {/* Left Content */}
         <div>

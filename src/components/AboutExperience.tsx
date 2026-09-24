@@ -2,8 +2,8 @@ import Image from "next/image";
 
 export default function AboutExperience() {
   return (
-    <section className="bg-white text-gray-900 py-24 px-6 lg:px-10">
-      <div className="max-w-[1400px] mx-auto w-full grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <section className="bg-white text-gray-900 py-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
         {/* Left Image */}
         <div className="relative h-[300px] lg:h-[500px] w-full order-2 lg:order-1">
           <Image

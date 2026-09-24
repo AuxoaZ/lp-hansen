@@ -25,7 +25,7 @@ export default function Hero() {
 
       <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-10 flex-1 grid lg:grid-cols-12 gap-8 items-center h-full pt-20 lg:pt-0">
         {/* Left Column - Text Content */}
-        <div className="lg:col-span-7 flex flex-col items-start">
+        <div className="lg:col-span-8 flex flex-col items-start">
           <div className="flex items-center gap-4 mb-4">
             <span className="text-text-muted font-base tracking-widest text-xs lg:text-sm">
               DESAIN INTERIOR & BUILD
@@ -33,7 +33,7 @@ export default function Hero() {
             <div className="w-8 h-[2px] bg-primary"></div>
           </div>
 
-          <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-5 font-serif">
+          <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-5 font-serif">
             WUJUDKAN
             <br />
             RUANG IMPIAN ANDA
@@ -94,11 +94,10 @@ export default function Hero() {
         </div>
 
         {/* Right Column - Form Card */}
-        <div
+        {/* <div
           className="lg:col-span-4 mt-0 md:mt-20 lg:col-start-9 relative"
           id="form"
         >
-          {/* Border Effect */}
           <div className="absolute -inset-1 bg-gradient-to-b from-primary/50 to-transparent z-0"></div>
 
           <div className="relative z-10 bg-card-bg p-6 lg:p-8 shadow-2xl">
@@ -199,7 +198,7 @@ export default function Hero() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
