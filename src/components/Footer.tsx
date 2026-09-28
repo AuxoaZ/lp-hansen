@@ -1,82 +1,123 @@
-import { FiInstagram, FiFacebook, FiLinkedin, FiMail, FiPhone, FiMapPin } from "react-icons/fi";
+"use client";
+
+import Link from "next/link";
+import { useContent } from "@/context/ContentContext";
+import { FiPhone, FiMail, FiMapPin, FiInstagram } from "react-icons/fi";
 
 export default function Footer() {
+  const { content } = useContent();
+  const footer = content.footer;
+  const branding = content.branding;
+
   return (
-    <footer className="bg-[#000d1c] text-white pt-20 pb-8">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          
-          {/* Col 1: Brand */}
-          <div>
-            <div className="flex flex-col mb-6">
-              <span className="text-3xl font-bold tracking-widest text-[#dbae6b] uppercase leading-none font-serif">
-                Hansen
-              </span>
-              <span className="text-[10px] tracking-[0.3em] text-white uppercase mt-1">
-                Projects
-              </span>
-            </div>
-            <p className="text-gray-400 text-xs leading-relaxed mb-6 max-w-xs">
-              Solusi end-to-end untuk kebutuhan interior dan konstruksi Anda. Berdedikasi untuk kualitas, estetika, dan fungsionalitas.
+    <footer className="bg-[#001730] text-white pt-16 pb-8 border-t border-white/10">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
+          {/* Col 1: Brand Info */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-3 group">
+              <img
+                src={branding.logoUrl || "/logo-hansen.png"}
+                alt="Logo"
+                className="h-9 w-auto object-contain brightness-0 invert"
+              />
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold tracking-widest text-[#dbae6b] uppercase leading-none font-serif">
+                  {branding.siteName}
+                </span>
+                <span className="text-[10px] tracking-[0.3em] text-gray-300 uppercase mt-1">
+                  {branding.siteTagline}
+                </span>
+              </div>
+            </Link>
+
+            <p className="text-xs text-gray-300 leading-relaxed">
+              {footer.aboutText}
             </p>
-            <div className="flex items-center gap-4 text-[#dbae6b]">
-              <a href="#" className="hover:text-white transition-colors p-2 bg-white/5 rounded-full"><FiInstagram /></a>
-              <a href="#" className="hover:text-white transition-colors p-2 bg-white/5 rounded-full"><FiFacebook /></a>
-              <a href="#" className="hover:text-white transition-colors p-2 bg-white/5 rounded-full"><FiLinkedin /></a>
+
+            <div className="flex items-center gap-3 text-sm text-[#dbae6b]">
+              <a href={`https://instagram.com/${footer.instagram?.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                <FiInstagram className="text-lg" />
+              </a>
             </div>
           </div>
 
-          {/* Col 2: Quick Links */}
-          <div>
-            <h4 className="text-white font-bold mb-6 uppercase text-sm tracking-wide">Tautan Cepat</h4>
-            <ul className="space-y-3 text-gray-400 text-xs">
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Beranda</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Tentang Kami</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Portofolio</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Proses Kerja</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Karir</a></li>
+          {/* Col 2: Navigation Links */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#dbae6b]">
+              Navigasi Cepat
+            </h4>
+            <ul className="space-y-2 text-xs text-gray-300">
+              <li>
+                <Link href="/" className="hover:text-[#dbae6b] transition-colors">
+                  Beranda
+                </Link>
+              </li>
+              <li>
+                <Link href="/tentang-kami" className="hover:text-[#dbae6b] transition-colors">
+                  Tentang Kami
+                </Link>
+              </li>
+              <li>
+                <Link href="/layanan" className="hover:text-[#dbae6b] transition-colors">
+                  Layanan Kami
+                </Link>
+              </li>
+              <li>
+                <Link href="/portofolio" className="hover:text-[#dbae6b] transition-colors">
+                  Portofolio Proyek
+                </Link>
+              </li>
+              <li>
+                <Link href="#kontak-kami" className="hover:text-[#dbae6b] transition-colors">
+                  Kontak
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Col 3: Services */}
-          <div>
-            <h4 className="text-white font-bold mb-6 uppercase text-sm tracking-wide">Layanan</h4>
-            <ul className="space-y-3 text-gray-400 text-xs">
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Desain Interior</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Desain & Konstruksi</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Konstruksi & Fit Out</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Furnitur Kustom</a></li>
-              <li><a href="#" className="hover:text-[#dbae6b] transition-colors">Konsultasi Desain</a></li>
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#dbae6b]">
+              Layanan Utama
+            </h4>
+            <ul className="space-y-2 text-xs text-gray-300">
+              <li>Custom Kitchen Set</li>
+              <li>Desain Interior Residensial</li>
+              <li>Fit Out Perkantoran</li>
+              <li>Interior Komersial & Retail</li>
+              <li>Hospitality & Cafe</li>
             </ul>
           </div>
 
-          {/* Col 4: Contact */}
-          <div>
-            <h4 className="text-white font-bold mb-6 uppercase text-sm tracking-wide">Kontak Kami</h4>
-            <ul className="space-y-4 text-gray-400 text-xs">
-              <li className="flex items-start gap-3">
-                <FiMapPin className="text-[#dbae6b] text-base shrink-0 mt-0.5" />
-                <span>Gedung Hansen Lt. 4, Jl. Jendral Sudirman No. 123, Jakarta Pusat 10220</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <FiPhone className="text-[#dbae6b] text-base shrink-0" />
-                <span>+62 21 1234 5678</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <FiMail className="text-[#dbae6b] text-base shrink-0" />
-                <span>hello@hansenprojects.com</span>
-              </li>
-            </ul>
+          {/* Col 4: Contact Info */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#dbae6b]">
+              Hubungi Kami
+            </h4>
+            <div className="space-y-2.5 text-xs text-gray-300">
+              <div className="flex items-center gap-2.5">
+                <FiPhone className="text-[#dbae6b] text-sm shrink-0" />
+                <span>{footer.phone}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <FiMail className="text-[#dbae6b] text-sm shrink-0" />
+                <span>{footer.email}</span>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <FiMapPin className="text-[#dbae6b] text-sm shrink-0 mt-0.5" />
+                <span>{footer.address}</span>
+              </div>
+            </div>
           </div>
-
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Hansen Projects. Hak Cipta Dilindungi.</p>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-white transition-colors">Kebijakan Privasi</a>
-            <a href="#" className="hover:text-white transition-colors">Syarat & Ketentuan</a>
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 gap-4">
+          <p>{footer.copyrightText}</p>
+          <div className="flex items-center gap-4">
+            <Link href="/admin" className="hover:text-[#dbae6b] transition-colors">
+              Admin CMS Panel
+            </Link>
           </div>
         </div>
       </div>

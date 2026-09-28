@@ -1,30 +1,18 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useContent } from "@/context/ContentContext";
 import { FiArrowRight } from "react-icons/fi";
 
-const projects = [
-  {
-    title: "Hunian Pribadi",
-    location: "Jakarta",
-    image: "/projects/residential.jpg",
-  },
-  {
-    title: "Interior Kantor",
-    location: "Tangerang",
-    image: "/services/fitout.jpg", // Reusing image due to quota
-  },
-  {
-    title: "Ruang Retail",
-    location: "Bandung",
-    image: "/styles/luxury.jpg", // Reusing image due to quota
-  },
-  {
-    title: "Proyek Hospitality",
-    location: "Bali",
-    image: "/styles/scandinavian.jpg", // Reusing image due to quota
-  },
-];
-
 export default function Projects() {
+  const { content } = useContent();
+  const projectsData = content.home.projects;
+  const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
+
+  const filteredItems = selectedCategory === "Semua"
+    ? projectsData.items
+    : projectsData.items.filter(item => item.category === selectedCategory);
+
   return (
     <section className="bg-[#f9fafb] text-gray-900 py-20" id="proyek">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
@@ -33,17 +21,17 @@ export default function Projects() {
           <div>
             <div className="flex items-center gap-4 mb-2">
               <h2 className="text-3xl md:text-4xl font-bold font-serif uppercase tracking-wide text-[#002044]">
-                PROYEK TERPILIH
+                {projectsData.title}
               </h2>
               <div className="w-16 h-[2px] bg-primary"></div>
             </div>
             <p className="text-gray-600 text-sm max-w-xl">
-              Jelajahi beberapa proyek terbaru kami untuk ruang hunian, komersial, dan hospitality.
+              {projectsData.subtitle}
             </p>
           </div>
           <a
-            href="#"
-            className="text-[#002044] hover:text-primary font-medium text-sm flex items-center gap-2 transition-colors"
+            href="/portofolio"
+            className="text-[#002044] hover:text-primary font-medium text-sm flex items-center gap-2 transition-colors font-bold"
           >
             Lihat Semua Proyek <span>&rarr;</span>
           </a>
@@ -51,35 +39,33 @@ export default function Projects() {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-10 border-b border-gray-200 pb-1">
-          <button className="bg-[#dbae6b] text-white px-8 py-2.5 text-sm font-medium shadow-sm transition-colors">
-            Semua
-          </button>
-          <button className="bg-white text-gray-600 hover:text-[#002044] border border-gray-200 hover:border-gray-300 px-8 py-2.5 text-sm font-medium transition-colors">
-            Hunian
-          </button>
-          <button className="bg-white text-gray-600 hover:text-[#002044] border border-gray-200 hover:border-gray-300 px-8 py-2.5 text-sm font-medium transition-colors">
-            Komersial
-          </button>
-          <button className="bg-white text-gray-600 hover:text-[#002044] border border-gray-200 hover:border-gray-300 px-8 py-2.5 text-sm font-medium transition-colors">
-            Perkantoran
-          </button>
-          <button className="bg-white text-gray-600 hover:text-[#002044] border border-gray-200 hover:border-gray-300 px-8 py-2.5 text-sm font-medium transition-colors">
-            Hospitality
-          </button>
+          {projectsData.categories.map((cat, idx) => (
+            <button
+              key={idx}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-8 py-2.5 text-sm font-medium transition-colors ${
+                selectedCategory === cat
+                  ? "bg-[#dbae6b] text-white shadow-sm font-bold"
+                  : "bg-white text-gray-600 hover:text-[#002044] border border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
         {/* Project Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {projects.map((project, index) => (
-            <div
+          {filteredItems.map((project, index) => (
+            <a
               key={index}
-              className="group relative h-[320px] lg:h-[400px] w-full overflow-hidden shadow-sm cursor-pointer"
+              href="/portofolio"
+              className="group relative h-[320px] lg:h-[400px] w-full overflow-hidden shadow-sm cursor-pointer block rounded-sm"
             >
-              <Image
-                src={project.image}
+              <img
+                src={project.image || "/projects/residential.jpg"}
                 alt={project.title}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               
               {/* Gradient Overlay bottom to top */}
@@ -99,7 +85,7 @@ export default function Projects() {
                   <FiArrowRight />
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>

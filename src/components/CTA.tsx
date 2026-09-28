@@ -1,28 +1,29 @@
-import { FiArrowRight } from "react-icons/fi";
+"use client";
+
+import { useContent } from "@/context/ContentContext";
 
 export default function CTA() {
+  const { content } = useContent();
+  const cta = content.home.cta;
+
   return (
-    <section className="relative py-24 bg-white">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
-        <div className="bg-gradient-to-br from-[#00152e] to-[#002855] rounded-3xl p-12 md:p-16 lg:p-20 shadow-2xl flex flex-col items-center text-center">
-          
-          <h4 className="text-[#dbae6b] tracking-widest text-xs font-bold uppercase mb-4">
-            SIAP MEWUJUDKAN RUANG IMPIAN ANDA?
-          </h4>
-          
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-white max-w-4xl leading-tight mb-6">
-            MARI BANGUN SESUATU YANG LUAR BIASA BERSAMA.
+    <section className="bg-gradient-to-r from-[#002044] via-[#0b2447] to-[#002044] text-white py-16">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-wide text-white mb-2">
+            {cta.title}
           </h2>
-          
-          <p className="text-gray-300 text-sm md:text-base max-w-2xl mb-10">
-            Hubungi kami hari ini dan ambil langkah pertama menuju ruang impian Anda.
+          <p className="text-gray-300 text-xs md:text-sm max-w-xl">
+            {cta.subtitle}
           </p>
-          
-          <button className="bg-white hover:bg-gray-100 text-[#002044] px-8 py-4 text-sm font-bold rounded-full shadow-lg flex items-center justify-center gap-3 transition-all transform hover:scale-105">
-            HUBUNGI KAMI <FiArrowRight className="text-lg" />
-          </button>
-          
         </div>
+
+        <a
+          href={cta.buttonLink || "#kontak-kami"}
+          className="bg-[#dbae6b] text-[#002044] hover:bg-white px-8 py-3.5 font-bold text-xs uppercase tracking-wider transition-colors shrink-0 shadow-lg rounded-sm"
+        >
+          {cta.buttonText} &rarr;
+        </a>
       </div>
     </section>
   );

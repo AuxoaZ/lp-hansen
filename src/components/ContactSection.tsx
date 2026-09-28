@@ -1,3 +1,6 @@
+"use client";
+
+import { useContent } from "@/context/ContentContext";
 import {
   FiPhone,
   FiMail,
@@ -9,6 +12,9 @@ import {
 } from "react-icons/fi";
 
 export default function ContactSection() {
+  const { content } = useContent();
+  const contact = content.home.contact;
+
   return (
     <section className="bg-white text-gray-900 py-20" id="kontak-kami">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
@@ -17,22 +23,21 @@ export default function ContactSection() {
           <div className="lg:col-span-7 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-xs font-bold tracking-widest text-[#002044] uppercase">
-                KONTAK KAMI
+                {contact.badge}
               </span>
               <div className="w-16 h-[2px] bg-[#dbae6b]"></div>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#002044] leading-tight mb-4">
-              Pilih Cara yang
+              {contact.titleLine1}
               <br />
-              Paling Nyaman untuk
+              {contact.titleLine2}
               <br />
-              <span className="text-[#dbae6b]">Menghubungi Kami.</span>
+              <span className="text-[#dbae6b]">{contact.titleLine3}</span>
             </h2>
 
             <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-10 max-w-xl">
-              Tim kami siap membantu menjawab pertanyaan Anda, memberikan informasi
-              lebih lanjut, atau menjadwalkan sesi konsultasi.
+              {contact.description}
             </p>
 
             {/* 4 Contact Items (2 Columns) */}
@@ -44,10 +49,10 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[#002044]">
-                    +62 812 3456 7890
+                    {contact.phone}
                   </h3>
                   <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-                    Senin – Jumat, 09.00 – 18.00 WIB
+                    {contact.phoneHours}
                   </p>
                 </div>
               </div>
@@ -59,10 +64,10 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[#002044]">
-                    hello@hansenprojects.com
+                    {contact.email}
                   </h3>
                   <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-                    Kami akan membalas secepatnya.
+                    {contact.emailSubtitle}
                   </p>
                 </div>
               </div>
@@ -74,12 +79,10 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[#002044]">
-                    Jakarta, Indonesia
+                    {contact.address}
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-500 mt-0.5 leading-relaxed">
-                    Ruko BSD Junction Blok A No. 12
-                    <br />
-                    Tangerang Selatan, Banten 15345
+                  <p className="text-xs md:text-sm text-gray-500 mt-0.5 leading-relaxed whitespace-pre-line">
+                    {contact.addressDetail}
                   </p>
                 </div>
               </div>
@@ -91,35 +94,33 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[#002044]">
-                    @hansenprojects
+                    {contact.instagram}
                   </h3>
                   <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-                    Lihat inspirasi proyek kami.
+                    {contact.instagramSubtitle}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Form Card copied from Hero.tsx */}
+          {/* Right Column - Form Card */}
           <div className="lg:col-span-5 relative w-full">
-            {/* Border Effect */}
             <div className="absolute -inset-1 bg-gradient-to-b from-[#dbae6b]/50 to-transparent z-0 rounded-sm"></div>
 
             <div className="relative z-10 bg-[#002044] text-white p-6 lg:p-8 shadow-2xl rounded-sm">
               <div className="flex items-center gap-3 mb-3 justify-center">
                 <div className="w-6 h-[2px] bg-[#dbae6b]"></div>
                 <h3 className="text-sm font-bold tracking-widest uppercase font-serif text-white">
-                  Mulai Proyek Anda
+                  {contact.formTitle}
                 </h3>
                 <div className="w-6 h-[2px] bg-[#dbae6b]"></div>
               </div>
               <p className="text-center text-gray-300 text-[13px] mb-6">
-                Ceritakan kebutuhan proyek Anda, tim kami siap membantu
-                mewujudkannya.
+                {contact.formSubtitle}
               </p>
 
-              <form className="space-y-3">
+              <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); alert("Terima kasih! Pesan Anda telah terkirim."); }}>
                 <input
                   type="text"
                   placeholder="Nama Lengkap*"

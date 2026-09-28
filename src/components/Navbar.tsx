@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
 import Link from "next/link";
-import Image from "next/image";
+import { useContent } from "@/context/ContentContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { content } = useContent();
+  const branding = content.branding;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +17,8 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const logoSrc = branding.logoUrl || "/logo-hansen.png";
 
   return (
     <header
@@ -26,62 +30,44 @@ export default function Navbar() {
     >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          {/* Logo Hansen Image with White Filter */}
-          <Image
-            src="/logo-hansen.png"
-            alt="Hansen Projects Logo"
-            width={40}
-            height={40}
+          {/* Logo Hansen Image */}
+          <img
+            src={logoSrc}
+            alt={`${branding.siteName} Logo`}
             className="h-9 w-auto object-contain brightness-0 invert transition-opacity group-hover:opacity-90"
-            priority
           />
           <div className="flex flex-col">
             <span className="text-2xl font-bold tracking-widest text-primary uppercase leading-none font-serif">
-              Hansen
+              {branding.siteName}
             </span>
             <span className="text-[10px] tracking-[0.3em] text-center text-foreground uppercase mt-1">
-              Projects
+              {branding.siteTagline}
             </span>
           </div>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-6 text-xs font-medium">
-          <Link href="/" className="hover:text-primary transition-colors">
-            Beranda
-          </Link>
-          <Link
-            href="/tentang-kami"
-            className="hover:text-primary transition-colors"
-          >
-            Tentang Kami
-          </Link>
-          <Link
-            href="/layanan"
-            className="hover:text-primary transition-colors"
-          >
-            Layanan
-          </Link>
-          <Link
-            href="/portofolio"
-            className="hover:text-primary transition-colors"
-          >
-            Portofolio
-          </Link>
-          <Link
-            href="#kontak-kami"
-            className="hover:text-primary transition-colors"
-          >
-            Kontak
-          </Link>
+          {branding.navLinks.map((link, idx) => (
+            <Link
+              key={idx}
+              href={link.url}
+              className="hover:text-primary transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-4">
-          <button className="text-foreground hover:text-primary transition-colors">
+          <button className="text-foreground hover:text-primary transition-colors" aria-label="Cari">
             <FiSearch className="text-lg" />
           </button>
-          <button className="hidden md:block border border-primary text-primary hover:bg-primary hover:text-background px-4 py-2 text-xs font-bold transition-colors">
-            HUBUNGI KAMI
-          </button>
+          <a
+            href={branding.contactButtonUrl || "#kontak-kami"}
+            className="hidden md:block border border-primary text-primary hover:bg-primary hover:text-background px-4 py-2 text-xs font-bold transition-colors"
+          >
+            {branding.contactButtonText || "HUBUNGI KAMI"}
+          </a>
         </div>
       </div>
     </header>

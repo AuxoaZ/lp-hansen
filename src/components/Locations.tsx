@@ -1,79 +1,48 @@
-import { FiMapPin, FiArrowRight } from "react-icons/fi";
+"use client";
 
-const cities = [
-  "Jakarta",
-  "Tangerang",
-  "Bekasi",
-  "Bandung",
-  "Surabaya",
-  "dan lainnya",
-];
+import { useContent } from "@/context/ContentContext";
+import { FiMapPin, FiPhone } from "react-icons/fi";
 
 export default function Locations() {
+  const { content } = useContent();
+  const locations = content.home.locations;
+
   return (
-    <section
-      className="bg-[#f9fafb] text-gray-900 py-20 relative overflow-hidden"
-      id="lokasi"
-    >
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full relative z-10">
-        <div className="grid lg:grid-cols-12 gap-8 items-center">
-          {/* Left Content */}
-          <div className="lg:col-span-3">
-            <div className="flex items-center gap-4 mb-2">
-              <h2 className="text-3xl md:text-4xl font-bold font-serif uppercase tracking-wide text-[#002044]">
-                LOKASI KAMI
-              </h2>
-              <div className="w-16 h-[2px] bg-primary"></div>
-            </div>
-            <p className="text-gray-600 text-sm mb-8">
-              Kami melayani klien di berbagai kota besar di Indonesia.
-            </p>
+    <section className="bg-[#001730] text-white py-20" id="lokasi">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
+        <div className="text-center mb-12">
+          <span className="text-xs font-bold tracking-widest text-[#dbae6b] uppercase block mb-2">
+            {locations.badge || "LOKASI LAYANAN"}
+          </span>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white uppercase tracking-wide">
+            {locations.title}
+          </h2>
+          <p className="text-gray-300 text-sm mt-2 max-w-xl mx-auto">
+            {locations.subtitle}
+          </p>
+          <div className="w-16 h-[2px] bg-[#dbae6b] mx-auto mt-4"></div>
+        </div>
 
-            <ul className="space-y-4">
-              {cities.map((city, index) => (
-                <li
-                  key={index}
-                  className="flex items-center gap-4 text-[#002044] font-medium text-sm"
-                >
-                  <FiMapPin className="text-lg" />
-                  {city}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Center Map (SVG Background with pins) */}
-          <div className="lg:col-span-6 relative h-[300px] sm:h-[400px] w-full flex items-center justify-center">
-            {/* The SVG Map from user */}
-            <img
-              src="/map-location.png"
-              alt="Peta Indonesia"
-              className="w-full h-full object-contain opacity-20 lg:opacity-100 drop-shadow-sm pointer-events-none"
-            />
-
-            {/* 
-              Mockup Pins (Approximate locations for demo purposes).
-              Since we don't know the exact SVG viewBox, we use percentages 
-              that roughly match the provided mockup image for Java island.
-            */}
-            {/* <div className="absolute top-[40%] left-[20%] w-3 h-3 bg-[#002044] rounded-full shadow-md"></div>
-            <div className="absolute top-[60%] left-[35%] w-3 h-3 bg-[#002044] rounded-full shadow-md"></div>
-            <div className="absolute top-[75%] left-[45%] w-3 h-3 bg-[#002044] rounded-full shadow-md"></div>
-            <div className="absolute top-[80%] left-[55%] w-3 h-3 bg-[#002044] rounded-full shadow-md"></div>
-            <div className="absolute top-[85%] left-[65%] w-3 h-3 bg-[#002044] rounded-full shadow-md"></div> */}
-          </div>
-
-          {/* Right CTA Box */}
-          <div className="lg:col-span-3 flex justify-end">
-            <div className="bg-white p-8 shadow-xl border border-gray-100 rounded-sm max-w-sm w-full">
-              <p className="text-[#002044] font-medium text-sm mb-6">
-                Diskusikan lokasi proyek Anda.
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {locations.items.map((loc, idx) => (
+            <div
+              key={idx}
+              className="bg-[#002044] p-6 rounded-sm border border-[#dbae6b]/30 space-y-4 hover:border-[#dbae6b] transition-colors"
+            >
+              <div className="flex items-center gap-3 text-[#dbae6b]">
+                <FiMapPin className="text-2xl shrink-0" />
+                <h3 className="text-xl font-bold font-serif text-white">
+                  {loc.name}
+                </h3>
+              </div>
+              <p className="text-gray-300 text-xs leading-relaxed">
+                {loc.address}
               </p>
-              <button className="w-full bg-[#dbae6b] hover:bg-[#c29858] text-white py-3 px-6 text-sm font-bold flex items-center justify-center gap-2 transition-colors">
-                HUBUNGI KAMI <FiArrowRight />
-              </button>
+              <div className="flex items-center gap-2 text-xs text-[#dbae6b] font-medium pt-2 border-t border-white/10">
+                <FiPhone /> {loc.phone}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

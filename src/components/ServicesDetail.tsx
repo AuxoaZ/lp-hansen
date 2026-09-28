@@ -1,52 +1,12 @@
-import Image from "next/image";
+"use client";
+
+import { useContent } from "@/context/ContentContext";
 import { FiArrowRight } from "react-icons/fi";
 
-const servicesList = [
-  {
-    number: "01",
-    title: "Kitchen Set",
-    description:
-      "Solusi kitchen set custom yang dirancang untuk menyesuaikan ukuran, kebutuhan penyimpanan, dan aktivitas sehari-hari.",
-    image: "/services/furniture.jpg",
-  },
-  {
-    number: "02",
-    title: "Interior Premium",
-    description:
-      "Perancangan interior dengan perhatian pada detail, material, fungsi, dan karakter ruang.",
-    image: "/services/interior.jpg",
-  },
-  {
-    number: "03",
-    title: "Rumah",
-    description:
-      "Menciptakan ruang hunian yang nyaman, fungsional, dan sesuai dengan kebutuhan setiap anggota keluarga.",
-    image: "/projects/residential.jpg",
-  },
-  {
-    number: "04",
-    title: "Apartemen",
-    description:
-      "Memaksimalkan ruang yang terbatas menjadi area yang nyaman, rapi, dan tetap memiliki karakter.",
-    image: "/styles/minimalist.jpg",
-  },
-  {
-    number: "05",
-    title: "Kantor",
-    description:
-      "Menciptakan ruang kerja yang mendukung aktivitas, produktivitas, dan identitas perusahaan.",
-    image: "/services/fitout.jpg",
-  },
-  {
-    number: "06",
-    title: "Hotel",
-    description:
-      "Solusi interior dan furniture untuk menciptakan pengalaman ruang yang nyaman dan sesuai dengan karakter hospitality.",
-    image: "/styles/luxury.jpg",
-  },
-];
-
 export default function ServicesDetail() {
+  const { content } = useContent();
+  const detail = content.layananPage.servicesDetail;
+
   return (
     <section className="bg-white text-gray-900 py-20" id="daftar-layanan">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
@@ -55,23 +15,21 @@ export default function ServicesDetail() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-xs font-bold tracking-widest text-[#002044] uppercase">
-                LAYANAN
+                {detail.badge || "LAYANAN"}
               </span>
               <div className="w-12 h-[2px] bg-[#dbae6b]"></div>
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-[#002044]">
-              Layanan Kami
+              {detail.title}
             </h2>
             <p className="text-gray-600 text-sm md:text-base mt-2 max-w-2xl">
-              Solusi furniture dan interior yang disesuaikan dengan kebutuhan ruang Anda.
+              {detail.description}
             </p>
           </div>
 
           <a
-            href="https://wa.me/6281234567890?text=Halo%20Hansen%20Projects,%20saya%20ingin%20berkonsultasi%20kebutuhan%20interior"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#002044] hover:text-[#dbae6b] font-medium text-sm flex items-center gap-2 transition-colors shrink-0 group"
+            href="#kontak-kami"
+            className="text-[#002044] hover:text-[#dbae6b] font-medium text-sm flex items-center gap-2 transition-colors shrink-0 group font-bold"
           >
             Konsultasikan Kebutuhan Anda
             <FiArrowRight className="text-base group-hover:translate-x-1 transition-transform" />
@@ -80,15 +38,14 @@ export default function ServicesDetail() {
 
         {/* 6 Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {servicesList.map((service) => (
-            <div key={service.number} className="flex flex-col group">
+          {detail.items.map((service, idx) => (
+            <div key={idx} className="flex flex-col group">
               {/* Card Image */}
               <div className="relative h-60 md:h-64 w-full overflow-hidden rounded-sm mb-6 bg-gray-100">
-                <Image
-                  src={service.image}
+                <img
+                  src={service.image || "/services/furniture.jpg"}
                   alt={service.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
 
@@ -107,9 +64,8 @@ export default function ServicesDetail() {
                   </p>
                 </div>
 
-                {/* Arrow link */}
                 <a
-                  href="#kalkulator-estimasi"
+                  href="#kontak-kami"
                   aria-label={`Detail ${service.title}`}
                   className="text-[#002044] hover:text-[#dbae6b] transition-colors absolute bottom-0 right-0 p-1"
                 >

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant, Poppins } from "next/font/google";
 import "./globals.css";
+import { ContentProvider } from "@/context/ContentContext";
 
 const cormorant = Cormorant({
   variable: "--font-cormorant",
@@ -25,7 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${cormorant.variable} ${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <ContentProvider>{children}</ContentProvider>
+      </body>
     </html>
   );
 }
+

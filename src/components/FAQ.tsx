@@ -1,105 +1,54 @@
 "use client";
 
 import { useState } from "react";
-import { FiPlus, FiMinus, FiArrowRight } from "react-icons/fi";
-
-const faqs = [
-  {
-    num: "01",
-    question: "Jenis proyek apa saja yang Anda tangani?",
-    answer: "Kami menangani berbagai proyek termasuk residensial (rumah tinggal, apartemen), komersial (kantor, toko ritel, restoran), dan proyek hospitality (hotel, resort).",
-  },
-  {
-    num: "02",
-    question: "Berapa lama waktu pengerjaan proyek interior?",
-    answer: "Waktu pengerjaan sangat bergantung pada skala dan kompleksitas proyek. Proyek kecil mungkin memakan waktu 4-6 minggu, sedangkan proyek besar bisa 3-6 bulan.",
-  },
-  {
-    num: "03",
-    question: "Apakah Anda hanya menyediakan jasa desain?",
-    answer: "Tidak, kami menyediakan layanan end-to-end mulai dari konsep desain, konstruksi, fit-out, hingga pembuatan furnitur kustom (Design & Build).",
-  },
-  {
-    num: "04",
-    question: "Area mana saja yang Anda layani?",
-    answer: "Kami berpusat di Jakarta namun melayani proyek di berbagai kota besar di Indonesia seperti Tangerang, Bekasi, Bandung, Surabaya, Bali, dan sekitarnya.",
-  },
-  {
-    num: "05",
-    question: "Bagaimana sistem pembayaran yang berlaku?",
-    answer: "Sistem pembayaran dibagi ke dalam beberapa termin (DP, Progress 1, Progress 2, dan Pelunasan saat Serah Terima), yang disesuaikan dengan nilai kontrak proyek.",
-  },
-  {
-    num: "06",
-    question: "Apakah Anda menyediakan layanan after-sales?",
-    answer: "Ya, kami memberikan masa garansi retensi setelah serah terima proyek untuk memastikan kualitas pekerjaan tetap terjaga dan sesuai standar kami.",
-  },
-];
+import { useContent } from "@/context/ContentContext";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  const { content } = useContent();
+  const faq = content.home.faq;
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <section className="bg-[#f9fafb] text-gray-900 py-20" id="faq">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-          <div>
-            <div className="flex items-center gap-4 mb-2">
-              <h2 className="text-3xl md:text-4xl font-bold font-serif uppercase tracking-wide text-[#002044]">
-                PERTANYAAN YANG SERING DIAJUKAN
-              </h2>
-              <div className="w-16 h-[2px] bg-primary"></div>
-            </div>
-            <p className="text-gray-600 text-sm max-w-xl">
-              Temukan jawaban untuk pertanyaan umum tentang layanan dan proses kami.
-            </p>
-          </div>
-          <a
-            href="#"
-            className="text-[#002044] hover:text-primary font-medium text-sm flex items-center gap-2 transition-colors"
-          >
-            Lihat Semua FAQ <span>&rarr;</span>
-          </a>
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full max-w-4xl">
+        <div className="text-center mb-12">
+          <span className="text-xs font-bold tracking-widest text-[#002044] uppercase block mb-2">
+            {faq.badge || "FAQ"}
+          </span>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#002044] uppercase tracking-wide">
+            {faq.title}
+          </h2>
+          <div className="w-16 h-[2px] bg-[#dbae6b] mx-auto mt-3"></div>
         </div>
 
-        {/* FAQ Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-2">
-          {faqs.map((faq, index) => (
-            <div key={index} className="border-b border-gray-200 py-4">
-              <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full flex items-center justify-between text-left focus:outline-none group"
+        <div className="space-y-4">
+          {faq.items.map((item, idx) => {
+            const isOpen = openIndex === idx;
+            return (
+              <div
+                key={idx}
+                className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden transition-colors"
               >
-                <div className="flex items-center gap-6">
-                  <span className="text-[#002044] font-bold text-sm">
-                    {faq.num}
-                  </span>
-                  <span className={`text-sm font-medium transition-colors ${openIndex === index ? 'text-primary' : 'text-gray-600 group-hover:text-[#002044]'}`}>
-                    {faq.question}
-                  </span>
-                </div>
-                <div className="text-[#002044]">
-                  {openIndex === index ? <FiMinus /> : <FiPlus />}
-                </div>
-              </button>
-              
-              {/* Expandable Answer */}
-              <div 
-                className={`overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? "max-h-40 mt-4 opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <p className="text-gray-500 text-xs leading-relaxed pl-10 pr-4 pb-2">
-                  {faq.answer}
-                </p>
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : idx)}
+                  className="w-full text-left p-5 flex items-center justify-between font-serif font-bold text-base md:text-lg text-[#002044] hover:text-[#dbae6b] transition-colors"
+                >
+                  <span>{item.question}</span>
+                  {isOpen ? (
+                    <FiChevronUp className="text-xl text-[#dbae6b] shrink-0 ml-4" />
+                  ) : (
+                    <FiChevronDown className="text-xl text-gray-400 shrink-0 ml-4" />
+                  )}
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1 text-gray-600 text-xs md:text-sm leading-relaxed border-t border-gray-100">
+                    {item.answer}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
