@@ -7,9 +7,18 @@ import PortfolioBanner from "@/components/PortfolioBanner";
 import CTA from "@/components/CTA";
 
 export const metadata: Metadata = {
-  title: "Portofolio Kami | Hansen Projects - Custom Furniture & Interior",
+  title: "Portofolio Proyek Interior & Custom Furniture",
   description:
-    "Jelajahi portofolio pengerjaan desain interior dan custom furniture terbaik oleh Hansen Projects untuk hunian, komersial, kantor, dan hospitality.",
+    "Jelajahi galeri portofolio pengerjaan desain interior dan custom furniture terbaik oleh Hansen Projects untuk hunian, komersial, kantor, dan kitchen set mewah.",
+  alternates: {
+    canonical: "/portofolio",
+  },
+  openGraph: {
+    title: "Portofolio Proyek Interior & Custom Furniture | Hansen Projects",
+    description:
+      "Jelajahi galeri portofolio pengerjaan desain interior dan custom furniture terbaik oleh Hansen Projects untuk hunian, komersial, kantor, dan kitchen set mewah.",
+    url: "/portofolio",
+  },
 };
 
 export default function PortofolioPage() {

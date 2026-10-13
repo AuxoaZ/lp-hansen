@@ -11,9 +11,18 @@ import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 
 export const metadata: Metadata = {
-  title: "Layanan kami | Hansen Projects - Custom Furniture & Interior",
+  title: "Layanan Desain Interior & Custom Furniture",
   description:
     "Hansen Projects menyediakan layanan custom furniture dan interior untuk berbagai kebutuhan ruang, mulai dari hunian hingga komersial. Desain fungsional, material berkualitas, pengerjaan profesional.",
+  alternates: {
+    canonical: "/layanan",
+  },
+  openGraph: {
+    title: "Layanan Desain Interior & Custom Furniture | Hansen Projects",
+    description:
+      "Hansen Projects menyediakan layanan custom furniture dan interior untuk berbagai kebutuhan ruang, mulai dari hunian hingga komersial. Desain fungsional, material berkualitas, pengerjaan profesional.",
+    url: "/layanan",
+  },
 };
 
 export default function LayananPage() {
