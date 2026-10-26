@@ -215,13 +215,8 @@
           "phone": "+62 812-3456-7890"
         },
         {
-          "name": "Bandung & Jawa Barat",
-          "address": "Bandung Kota, Cimahi, dan Sekitarnya",
-          "phone": "+62 812-3456-7890"
-        },
-        {
-          "name": "Bali & Sekitarnya",
-          "address": "Denpasar, Seminyak, Canggu, Ubud",
+          "name": "Luar Jabodetabek",
+          "address": "Bandung, Jambi, Bali, Pekanbaru",
           "phone": "+62 812-3456-7890"
         }
       ]
