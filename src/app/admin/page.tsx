@@ -159,6 +159,31 @@ export default function AdminPage() {
     }
   };
 
+  const handleSyncInitial = async () => {
+    if (
+      confirm(
+        "Apakah Anda yakin ingin menyinkronkan seluruh konten website kembali ke data default kode? Perubahan yang ada di CMS akan digantikan dengan data kode awal."
+      )
+    ) {
+      try {
+        const res = await fetch("/api/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ syncInitial: true }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          await reloadContent();
+          showToast("Konten berhasil disinkronkan ke kode default!", "success");
+        } else {
+          showToast(data.message || "Gagal sinkronisasi.", "error");
+        }
+      } catch (err: any) {
+        showToast(err.message || "Gagal sinkronisasi.", "error");
+      }
+    }
+  };
+
   // Helper mutation functions
   const updateBranding = (key: keyof SiteContent["branding"], value: any) => {
     updateContent({
@@ -381,6 +406,15 @@ export default function AdminPage() {
             title="Muat Ulang Data dari GitHub"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} /> Refresh
+          </button>
+
+          <button
+            onClick={handleSyncInitial}
+            disabled={loading || saving}
+            className="hidden md:flex items-center gap-1.5 text-xs text-[#dbae6b] hover:bg-[#dbae6b]/20 bg-[#001730] border border-[#dbae6b]/30 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+            title="Sinkronkan seluruh konten CMS dengan data awal kode"
+          >
+            <FiRefreshCw /> Sinkronkan Default
           </button>
 
           <button
@@ -1829,24 +1863,261 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {/* Fallback for other Home sub-tabs */}
-              {["locations", "cta"].includes(homeSubTab) && (
-                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl max-w-4xl space-y-4">
+              {/* Home Subtab: Locations */}
+              {homeSubTab === "locations" && (
+                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl max-w-4xl space-y-6">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Pengaturan Section Lokasi Layanan
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Badge Lokasi
+                      </label>
+                      <input
+                        type="text"
+                        value={content.home.locations.badge}
+                        onChange={(e) =>
+                          updateHome("locations", {
+                            ...content.home.locations,
+                            badge: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Judul Utama
+                      </label>
+                      <input
+                        type="text"
+                        value={content.home.locations.title}
+                        onChange={(e) =>
+                          updateHome("locations", {
+                            ...content.home.locations,
+                            title: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
-                      Judul Section {homeSubTab.toUpperCase()}
+                      Sub-judul Deskripsi
                     </label>
                     <input
                       type="text"
-                      value={(content.home as any)[homeSubTab]?.title || ""}
+                      value={content.home.locations.subtitle}
                       onChange={(e) =>
-                        updateHome(homeSubTab as keyof SiteContent["home"], {
-                          ...(content.home as any)[homeSubTab],
-                          title: e.target.value,
+                        updateHome("locations", {
+                          ...content.home.locations,
+                          subtitle: e.target.value,
                         })
                       }
                       className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
                     />
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300">
+                        Daftar Kartu Lokasi ({content.home.locations.items.length})
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [
+                            ...content.home.locations.items,
+                            {
+                              name: "Nama Wilayah",
+                              address: "Daftar Kota / Area",
+                              phone: "+62 812-3456-7890",
+                            },
+                          ];
+                          updateHome("locations", {
+                            ...content.home.locations,
+                            items: updated,
+                          });
+                        }}
+                        className="text-xs bg-[#dbae6b]/20 text-[#dbae6b] hover:bg-[#dbae6b] hover:text-[#001730] px-3 py-1.5 rounded transition font-semibold"
+                      >
+                        + Tambah Lokasi
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {content.home.locations.items.map((loc, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-[#001730] p-4 rounded-lg border border-[#dbae6b]/20 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-[#dbae6b]">
+                              Lokasi #{idx + 1}
+                            </span>
+                            {content.home.locations.items.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = content.home.locations.items.filter(
+                                    (_, i) => i !== idx
+                                  );
+                                  updateHome("locations", {
+                                    ...content.home.locations,
+                                    items: updated,
+                                  });
+                                }}
+                                className="text-xs text-red-400 hover:text-red-300"
+                              >
+                                Hapus
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-[11px] text-gray-400 mb-1">
+                                Nama Area / Wilayah
+                              </label>
+                              <input
+                                type="text"
+                                value={loc.name}
+                                onChange={(e) => {
+                                  const updated = [...content.home.locations.items];
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    name: e.target.value,
+                                  };
+                                  updateHome("locations", {
+                                    ...content.home.locations,
+                                    items: updated,
+                                  });
+                                }}
+                                className="w-full bg-[#0b1728] border border-[#dbae6b]/30 text-white text-xs px-3 py-2 rounded"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] text-gray-400 mb-1">
+                                Cakupan Kota
+                              </label>
+                              <input
+                                type="text"
+                                value={loc.address}
+                                onChange={(e) => {
+                                  const updated = [...content.home.locations.items];
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    address: e.target.value,
+                                  };
+                                  updateHome("locations", {
+                                    ...content.home.locations,
+                                    items: updated,
+                                  });
+                                }}
+                                className="w-full bg-[#0b1728] border border-[#dbae6b]/30 text-white text-xs px-3 py-2 rounded"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] text-gray-400 mb-1">
+                                Nomor Telepon
+                              </label>
+                              <input
+                                type="text"
+                                value={loc.phone}
+                                onChange={(e) => {
+                                  const updated = [...content.home.locations.items];
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    phone: e.target.value,
+                                  };
+                                  updateHome("locations", {
+                                    ...content.home.locations,
+                                    items: updated,
+                                  });
+                                }}
+                                className="w-full bg-[#0b1728] border border-[#dbae6b]/30 text-white text-xs px-3 py-2 rounded"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Home Subtab: CTA Banner */}
+              {homeSubTab === "cta" && (
+                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl max-w-4xl space-y-6">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Pengaturan Section CTA Banner Bawah
+                  </h3>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Judul CTA Banner
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={content.home.cta.title}
+                      onChange={(e) =>
+                        updateHome("cta", {
+                          ...content.home.cta,
+                          title: e.target.value,
+                        })
+                      }
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg resize-y"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Sub-judul Deskripsi
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={content.home.cta.subtitle}
+                      onChange={(e) =>
+                        updateHome("cta", {
+                          ...content.home.cta,
+                          subtitle: e.target.value,
+                        })
+                      }
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg resize-y"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Teks Tombol
+                      </label>
+                      <input
+                        type="text"
+                        value={content.home.cta.buttonText}
+                        onChange={(e) =>
+                          updateHome("cta", {
+                            ...content.home.cta,
+                            buttonText: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Target Link Tombol
+                      </label>
+                      <input
+                        type="text"
+                        value={content.home.cta.buttonLink}
+                        onChange={(e) =>
+                          updateHome("cta", {
+                            ...content.home.cta,
+                            buttonLink: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -2075,21 +2346,184 @@ export default function AdminPage() {
 
               {layananSubTab === "whyUs" && (
                 <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-6 max-w-4xl">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Section Mengapa Memilih Kami
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Badge Section
+                      </label>
+                      <input
+                        type="text"
+                        value={content.layananPage.whyUs.badge}
+                        onChange={(e) =>
+                          updateLayananPage("whyUs", {
+                            ...content.layananPage.whyUs,
+                            badge: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Judul Utama
+                      </label>
+                      <input
+                        type="text"
+                        value={content.layananPage.whyUs.title}
+                        onChange={(e) =>
+                          updateLayananPage("whyUs", {
+                            ...content.layananPage.whyUs,
+                            title: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
-                      Judul Section Mengapa Kami
+                      Deskripsi Pendukung
                     </label>
-                    <input
-                      type="text"
-                      value={content.layananPage.whyUs.title}
+                    <textarea
+                      rows={2}
+                      value={content.layananPage.whyUs.description}
                       onChange={(e) =>
                         updateLayananPage("whyUs", {
                           ...content.layananPage.whyUs,
-                          title: e.target.value,
+                          description: e.target.value,
                         })
                       }
-                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg resize-y"
                     />
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#dbae6b]">
+                        Daftar Poin Keunggulan ({content.layananPage.whyUs.items.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [
+                            ...content.layananPage.whyUs.items,
+                            {
+                              title: "Keunggulan Baru",
+                              description: "Deskripsi keunggulan baru kami.",
+                              icon: "star",
+                            },
+                          ];
+                          updateLayananPage("whyUs", {
+                            ...content.layananPage.whyUs,
+                            items: updated,
+                          });
+                        }}
+                        className="bg-[#dbae6b]/20 text-[#dbae6b] text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-[#dbae6b]/40"
+                      >
+                        <FiPlus /> Tambah Keunggulan
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {content.layananPage.whyUs.items.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-[#001730] p-4 rounded-xl border border-white/10 space-y-3"
+                        >
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span className="text-xs font-bold text-[#dbae6b]">
+                              Keunggulan #{idx + 1}
+                            </span>
+                            {content.layananPage.whyUs.items.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = content.layananPage.whyUs.items.filter(
+                                    (_, i) => i !== idx
+                                  );
+                                  updateLayananPage("whyUs", {
+                                    ...content.layananPage.whyUs,
+                                    items: updated,
+                                  });
+                                }}
+                                className="text-red-400 hover:text-red-300 text-xs flex items-center gap-1"
+                              >
+                                <FiTrash2 /> Hapus
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[11px] text-gray-400 mb-1">
+                                Judul Keunggulan
+                              </label>
+                              <input
+                                type="text"
+                                value={item.title}
+                                onChange={(e) => {
+                                  const updated = [...content.layananPage.whyUs.items];
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    title: e.target.value,
+                                  };
+                                  updateLayananPage("whyUs", {
+                                    ...content.layananPage.whyUs,
+                                    items: updated,
+                                  });
+                                }}
+                                className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3 py-2 rounded"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] text-gray-400 mb-1">
+                                Icon (pen, layers, clock, shield, star)
+                              </label>
+                              <input
+                                type="text"
+                                value={item.icon || "star"}
+                                onChange={(e) => {
+                                  const updated = [...content.layananPage.whyUs.items];
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    icon: e.target.value,
+                                  };
+                                  updateLayananPage("whyUs", {
+                                    ...content.layananPage.whyUs,
+                                    items: updated,
+                                  });
+                                }}
+                                className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3 py-2 rounded"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] text-gray-400 mb-1">
+                              Deskripsi
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={item.description}
+                              onChange={(e) => {
+                                const updated = [...content.layananPage.whyUs.items];
+                                updated[idx] = {
+                                  ...updated[idx],
+                                  description: e.target.value,
+                                };
+                                updateLayananPage("whyUs", {
+                                  ...content.layananPage.whyUs,
+                                  items: updated,
+                                });
+                              }}
+                              className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3 py-2 rounded resize-y"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -2128,6 +2562,182 @@ export default function AdminPage() {
                   </button>
                 ))}
               </div>
+
+              {/* Portfolio Intro Editor */}
+              {portfolioSubTab === "intro" && (
+                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-6 max-w-4xl">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Intro Header & Statistik Portofolio
+                  </h3>
+                  <ImagePicker
+                    label="Background Header Portofolio"
+                    value={content.portofolioPage.intro.bgImage}
+                    onChange={(val) =>
+                      updatePortofolioPage("intro", {
+                        ...content.portofolioPage.intro,
+                        bgImage: val,
+                      })
+                    }
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Badge Intro
+                      </label>
+                      <input
+                        type="text"
+                        value={content.portofolioPage.intro.badge}
+                        onChange={(e) =>
+                          updatePortofolioPage("intro", {
+                            ...content.portofolioPage.intro,
+                            badge: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Baris Judul 1
+                      </label>
+                      <input
+                        type="text"
+                        value={content.portofolioPage.intro.titleLine1}
+                        onChange={(e) =>
+                          updatePortofolioPage("intro", {
+                            ...content.portofolioPage.intro,
+                            titleLine1: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Baris Judul 2 (Highlight Emas)
+                    </label>
+                    <input
+                      type="text"
+                      value={content.portofolioPage.intro.titleLine2}
+                      onChange={(e) =>
+                        updatePortofolioPage("intro", {
+                          ...content.portofolioPage.intro,
+                          titleLine2: e.target.value,
+                        })
+                      }
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Deskripsi Portofolio
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={content.portofolioPage.intro.description}
+                      onChange={(e) =>
+                        updatePortofolioPage("intro", {
+                          ...content.portofolioPage.intro,
+                          description: e.target.value,
+                        })
+                      }
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg resize-y"
+                    />
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#dbae6b]">
+                        Angka Statistik ({content.portofolioPage.intro.stats.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [
+                            ...content.portofolioPage.intro.stats,
+                            { number: "99+", label: "Klien Puas" },
+                          ];
+                          updatePortofolioPage("intro", {
+                            ...content.portofolioPage.intro,
+                            stats: updated,
+                          });
+                        }}
+                        className="bg-[#dbae6b]/20 text-[#dbae6b] text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-[#dbae6b]/40"
+                      >
+                        <FiPlus /> Tambah Stat
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {content.portofolioPage.intro.stats.map((st, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-[#001730] p-3.5 rounded-xl border border-white/10 space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-[#dbae6b]">
+                              Stat #{idx + 1}
+                            </span>
+                            {content.portofolioPage.intro.stats.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = content.portofolioPage.intro.stats.filter(
+                                    (_, i) => i !== idx
+                                  );
+                                  updatePortofolioPage("intro", {
+                                    ...content.portofolioPage.intro,
+                                    stats: updated,
+                                  });
+                                }}
+                                className="text-red-400 hover:text-red-300 text-xs"
+                              >
+                                Hapus
+                              </button>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] text-gray-400 mb-1">Angka</label>
+                            <input
+                              type="text"
+                              value={st.number}
+                              onChange={(e) => {
+                                const updated = [...content.portofolioPage.intro.stats];
+                                updated[idx] = { ...updated[idx], number: e.target.value };
+                                updatePortofolioPage("intro", {
+                                  ...content.portofolioPage.intro,
+                                  stats: updated,
+                                });
+                              }}
+                              className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3 py-2 rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] text-gray-400 mb-1">Label Keterangan</label>
+                            <input
+                              type="text"
+                              value={st.label}
+                              onChange={(e) => {
+                                const updated = [...content.portofolioPage.intro.stats];
+                                updated[idx] = { ...updated[idx], label: e.target.value };
+                                updatePortofolioPage("intro", {
+                                  ...content.portofolioPage.intro,
+                                  stats: updated,
+                                });
+                              }}
+                              className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3 py-2 rounded"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {portfolioSubTab === "gallery" && (
                 <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-6 max-w-4xl">
@@ -2270,6 +2880,81 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
+
+              {/* Portfolio Banner Editor */}
+              {portfolioSubTab === "banner" && (
+                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-6 max-w-4xl">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Banner Bawah Portofolio
+                  </h3>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Judul Banner
+                    </label>
+                    <input
+                      type="text"
+                      value={content.portofolioPage.banner.title}
+                      onChange={(e) =>
+                        updatePortofolioPage("banner", {
+                          ...content.portofolioPage.banner,
+                          title: e.target.value,
+                        })
+                      }
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Sub-judul Banner
+                    </label>
+                    <input
+                      type="text"
+                      value={content.portofolioPage.banner.subtitle}
+                      onChange={(e) =>
+                        updatePortofolioPage("banner", {
+                          ...content.portofolioPage.banner,
+                          subtitle: e.target.value,
+                        })
+                      }
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Teks Tombol
+                      </label>
+                      <input
+                        type="text"
+                        value={content.portofolioPage.banner.buttonText}
+                        onChange={(e) =>
+                          updatePortofolioPage("banner", {
+                            ...content.portofolioPage.banner,
+                            buttonText: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Link Target Tombol
+                      </label>
+                      <input
+                        type="text"
+                        value={content.portofolioPage.banner.buttonLink}
+                        onChange={(e) =>
+                          updatePortofolioPage("banner", {
+                            ...content.portofolioPage.banner,
+                            buttonLink: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -2400,6 +3085,445 @@ export default function AdminPage() {
                   </div>
                 </div>
               )}
+
+              {/* Tentang Kami: Vision & Mission */}
+              {tentangSubTab === "vision" && (
+                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-6 max-w-4xl">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Visi & Misi Perusahaan
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Badge Visi & Misi
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.vision.badge}
+                        onChange={(e) =>
+                          updateTentangKamiPage("vision", {
+                            ...content.tentangKamiPage.vision,
+                            badge: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Judul Utama
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.vision.title}
+                        onChange={(e) =>
+                          updateTentangKamiPage("vision", {
+                            ...content.tentangKamiPage.vision,
+                            title: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Pernyataan Visi Perusahaan
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={content.tentangKamiPage.vision.visionText}
+                      onChange={(e) =>
+                        updateTentangKamiPage("vision", {
+                          ...content.tentangKamiPage.vision,
+                          visionText: e.target.value,
+                        })
+                      }
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg resize-y"
+                    />
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Judul Bagian Misi
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.vision.missionTitle}
+                        onChange={(e) =>
+                          updateTentangKamiPage("vision", {
+                            ...content.tentangKamiPage.vision,
+                            missionTitle: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#dbae6b]">
+                        Poin-poin Misi ({content.tentangKamiPage.vision.missions.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [
+                            ...content.tentangKamiPage.vision.missions,
+                            "Misi baru komitmen Hansen Projects.",
+                          ];
+                          updateTentangKamiPage("vision", {
+                            ...content.tentangKamiPage.vision,
+                            missions: updated,
+                          });
+                        }}
+                        className="bg-[#dbae6b]/20 text-[#dbae6b] text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-[#dbae6b]/40"
+                      >
+                        <FiPlus /> Tambah Misi
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {content.tentangKamiPage.vision.missions.map((m, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <span className="text-xs text-[#dbae6b] font-bold w-6">{idx + 1}.</span>
+                          <input
+                            type="text"
+                            value={m}
+                            onChange={(e) => {
+                              const updated = [...content.tentangKamiPage.vision.missions];
+                              updated[idx] = e.target.value;
+                              updateTentangKamiPage("vision", {
+                                ...content.tentangKamiPage.vision,
+                                missions: updated,
+                              });
+                            }}
+                            className="flex-1 bg-[#091322] border border-white/10 text-white text-xs px-3.5 py-2 rounded"
+                          />
+                          {content.tentangKamiPage.vision.missions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = content.tentangKamiPage.vision.missions.filter(
+                                  (_, i) => i !== idx
+                                );
+                                updateTentangKamiPage("vision", {
+                                  ...content.tentangKamiPage.vision,
+                                  missions: updated,
+                                });
+                              }}
+                              className="text-red-400 hover:text-red-300 p-2"
+                            >
+                              <FiTrash2 />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tentang Kami: Values */}
+              {tentangSubTab === "values" && (
+                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-6 max-w-4xl">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Nilai-nilai Utama (Values)
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Badge Nilai
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.values.badge}
+                        onChange={(e) =>
+                          updateTentangKamiPage("values", {
+                            ...content.tentangKamiPage.values,
+                            badge: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Judul Section
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.values.title}
+                        onChange={(e) =>
+                          updateTentangKamiPage("values", {
+                            ...content.tentangKamiPage.values,
+                            title: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#dbae6b]">
+                        Daftar Nilai ({content.tentangKamiPage.values.items.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [
+                            ...content.tentangKamiPage.values.items,
+                            { title: "Nilai Baru", description: "Deskripsi nilai prinsip kerja." },
+                          ];
+                          updateTentangKamiPage("values", {
+                            ...content.tentangKamiPage.values,
+                            items: updated,
+                          });
+                        }}
+                        className="bg-[#dbae6b]/20 text-[#dbae6b] text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-[#dbae6b]/40"
+                      >
+                        <FiPlus /> Tambah Nilai
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {content.tentangKamiPage.values.items.map((val, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-[#001730] p-4 rounded-xl border border-white/10 space-y-3"
+                        >
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span className="text-xs font-bold text-[#dbae6b]">
+                              Nilai #{idx + 1}
+                            </span>
+                            {content.tentangKamiPage.values.items.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = content.tentangKamiPage.values.items.filter(
+                                    (_, i) => i !== idx
+                                  );
+                                  updateTentangKamiPage("values", {
+                                    ...content.tentangKamiPage.values,
+                                    items: updated,
+                                  });
+                                }}
+                                className="text-red-400 hover:text-red-300 text-xs flex items-center gap-1"
+                              >
+                                <FiTrash2 /> Hapus
+                              </button>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] text-gray-400 mb-1">Judul Nilai</label>
+                            <input
+                              type="text"
+                              value={val.title}
+                              onChange={(e) => {
+                                const updated = [...content.tentangKamiPage.values.items];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                updateTentangKamiPage("values", {
+                                  ...content.tentangKamiPage.values,
+                                  items: updated,
+                                });
+                              }}
+                              className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3.5 py-2 rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] text-gray-400 mb-1">Deskripsi</label>
+                            <textarea
+                              rows={2}
+                              value={val.description}
+                              onChange={(e) => {
+                                const updated = [...content.tentangKamiPage.values.items];
+                                updated[idx] = { ...updated[idx], description: e.target.value };
+                                updateTentangKamiPage("values", {
+                                  ...content.tentangKamiPage.values,
+                                  items: updated,
+                                });
+                              }}
+                              className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3.5 py-2 rounded resize-y"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tentang Kami: Experience */}
+              {tentangSubTab === "experience" && (
+                <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-6 max-w-4xl">
+                  <h3 className="text-sm font-bold text-[#dbae6b] uppercase tracking-wider">
+                    Pengalaman & Riwayat Milestone
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Badge
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.experience.badge}
+                        onChange={(e) =>
+                          updateTentangKamiPage("experience", {
+                            ...content.tentangKamiPage.experience,
+                            badge: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Judul Utama
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.experience.title}
+                        onChange={(e) =>
+                          updateTentangKamiPage("experience", {
+                            ...content.tentangKamiPage.experience,
+                            title: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                        Sub-judul
+                      </label>
+                      <input
+                        type="text"
+                        value={content.tentangKamiPage.experience.subtitle}
+                        onChange={(e) =>
+                          updateTentangKamiPage("experience", {
+                            ...content.tentangKamiPage.experience,
+                            subtitle: e.target.value,
+                          })
+                        }
+                        className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#dbae6b]">
+                        Milestone Timeline ({content.tentangKamiPage.experience.items.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [
+                            ...content.tentangKamiPage.experience.items,
+                            {
+                              year: "2026",
+                              title: "Pencapaian Baru",
+                              description: "Deskripsi pencapaian milestone.",
+                            },
+                          ];
+                          updateTentangKamiPage("experience", {
+                            ...content.tentangKamiPage.experience,
+                            items: updated,
+                          });
+                        }}
+                        className="bg-[#dbae6b]/20 text-[#dbae6b] text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-[#dbae6b]/40"
+                      >
+                        <FiPlus /> Tambah Milestone
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {content.tentangKamiPage.experience.items.map((ex, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-[#001730] p-4 rounded-xl border border-white/10 space-y-3"
+                        >
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span className="text-xs font-bold text-[#dbae6b]">
+                              Milestone #{idx + 1}
+                            </span>
+                            {content.tentangKamiPage.experience.items.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = content.tentangKamiPage.experience.items.filter(
+                                    (_, i) => i !== idx
+                                  );
+                                  updateTentangKamiPage("experience", {
+                                    ...content.tentangKamiPage.experience,
+                                    items: updated,
+                                  });
+                                }}
+                                className="text-red-400 hover:text-red-300 text-xs flex items-center gap-1"
+                              >
+                                <FiTrash2 /> Hapus
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-[11px] text-gray-400 mb-1">Tahun / Periode</label>
+                              <input
+                                type="text"
+                                value={ex.year}
+                                onChange={(e) => {
+                                  const updated = [...content.tentangKamiPage.experience.items];
+                                  updated[idx] = { ...updated[idx], year: e.target.value };
+                                  updateTentangKamiPage("experience", {
+                                    ...content.tentangKamiPage.experience,
+                                    items: updated,
+                                  });
+                                }}
+                                className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3.5 py-2 rounded"
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-[11px] text-gray-400 mb-1">Judul Pencapaian</label>
+                              <input
+                                type="text"
+                                value={ex.title}
+                                onChange={(e) => {
+                                  const updated = [...content.tentangKamiPage.experience.items];
+                                  updated[idx] = { ...updated[idx], title: e.target.value };
+                                  updateTentangKamiPage("experience", {
+                                    ...content.tentangKamiPage.experience,
+                                    items: updated,
+                                  });
+                                }}
+                                className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3.5 py-2 rounded"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] text-gray-400 mb-1">Deskripsi Pencapaian</label>
+                            <textarea
+                              rows={2}
+                              value={ex.description}
+                              onChange={(e) => {
+                                const updated = [...content.tentangKamiPage.experience.items];
+                                updated[idx] = { ...updated[idx], description: e.target.value };
+                                updateTentangKamiPage("experience", {
+                                  ...content.tentangKamiPage.experience,
+                                  items: updated,
+                                });
+                              }}
+                              className="w-full bg-[#091322] border border-white/10 text-white text-xs px-3.5 py-2 rounded resize-y"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -2464,6 +3588,32 @@ export default function AdminPage() {
                       type="text"
                       value={content.footer.email}
                       onChange={(e) => updateFooter("email", e.target.value)}
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Alamat / Kota Footer
+                    </label>
+                    <input
+                      type="text"
+                      value={content.footer.address}
+                      onChange={(e) => updateFooter("address", e.target.value)}
+                      className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
+                      Akun Instagram Footer
+                    </label>
+                    <input
+                      type="text"
+                      value={content.footer.instagram}
+                      onChange={(e) => updateFooter("instagram", e.target.value)}
                       className="w-full bg-[#001730] border border-[#dbae6b]/30 text-white text-xs px-3.5 py-2.5 rounded-lg"
                     />
                   </div>

@@ -49,7 +49,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { content, config } = body;
+    let { content, config, syncInitial } = body;
+
+    if (syncInitial || !content) {
+      content = initialContent;
+    }
 
     const pat = config?.pat || process.env.GITHUB_PAT || process.env.NEXT_PUBLIC_GITHUB_PAT;
     const owner = config?.owner || process.env.GITHUB_OWNER || process.env.NEXT_PUBLIC_GITHUB_OWNER;

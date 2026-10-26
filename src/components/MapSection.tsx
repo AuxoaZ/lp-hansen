@@ -10,7 +10,7 @@ export default function MapSection() {
     <section className="bg-white py-12 border-t border-gray-100">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
         <h3 className="text-xl font-serif font-bold text-[#002044] mb-6 tracking-wide">
-          {mapData.title || "Lokasi Workshop & Workshop"}
+          {mapData.title || "Lokasi Workshop"}
         </h3>
         <div className="w-full h-[400px] rounded-lg overflow-hidden border border-gray-200 shadow-md">
           <iframe

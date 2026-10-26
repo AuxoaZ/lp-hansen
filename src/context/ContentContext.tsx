@@ -24,8 +24,6 @@ interface ContentContextType {
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
 
-const GITHUB_CONFIG_STORAGE_KEY = "hansen_cms_github_config";
-
 export function ContentProvider({ children }: { children: React.ReactNode }) {
   const [content, setContent] = useState<SiteContent>(initialContent);
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,28 +36,6 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     branch: "main",
     path: "content.json",
   });
-
-  // Load saved GitHub config from localStorage on initial render
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedConfig = localStorage.getItem(GITHUB_CONFIG_STORAGE_KEY);
-      if (savedConfig) {
-        try {
-          const parsed = JSON.parse(savedConfig);
-          setGithubConfig(parsed);
-        } catch (e) {
-          console.error("Failed to parse stored github config", e);
-        }
-      }
-    }
-  }, []);
-
-  // Save githubConfig to localStorage when changed
-  useEffect(() => {
-    if (typeof window !== "undefined" && githubConfig) {
-      localStorage.setItem(GITHUB_CONFIG_STORAGE_KEY, JSON.stringify(githubConfig));
-    }
-  }, [githubConfig]);
 
   const reloadContent = async () => {
     setLoading(true);

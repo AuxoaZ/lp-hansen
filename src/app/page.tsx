@@ -22,10 +22,10 @@ export default function Home() {
       <Process />
       <Styles />
       <Projects />
-      <Testimonials />
       <Locations />
-      <ServicesParallax />
+      <Testimonials />
       <FAQ />
+      <ServicesParallax />
       {/* Contact Section with Left Info & Right Form */}
       <ContactSection />
       {/* Google Maps Embed Section */}

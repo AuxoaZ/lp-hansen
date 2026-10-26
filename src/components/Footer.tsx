@@ -36,7 +36,12 @@ export default function Footer() {
             </p>
 
             <div className="flex items-center gap-3 text-sm text-[#dbae6b]">
-              <a href={`https://instagram.com/${footer.instagram?.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              <a
+                href={`https://instagram.com/${footer.instagram?.replace("@", "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
                 <FiInstagram className="text-lg" />
               </a>
             </div>
@@ -49,27 +54,42 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-gray-300">
               <li>
-                <Link href="/" className="hover:text-[#dbae6b] transition-colors">
+                <Link
+                  href="/"
+                  className="hover:text-[#dbae6b] transition-colors"
+                >
                   Beranda
                 </Link>
               </li>
               <li>
-                <Link href="/tentang-kami" className="hover:text-[#dbae6b] transition-colors">
+                <Link
+                  href="/tentang-kami"
+                  className="hover:text-[#dbae6b] transition-colors"
+                >
                   Tentang Kami
                 </Link>
               </li>
               <li>
-                <Link href="/layanan" className="hover:text-[#dbae6b] transition-colors">
+                <Link
+                  href="/layanan"
+                  className="hover:text-[#dbae6b] transition-colors"
+                >
                   Layanan Kami
                 </Link>
               </li>
               <li>
-                <Link href="/portofolio" className="hover:text-[#dbae6b] transition-colors">
+                <Link
+                  href="/portofolio"
+                  className="hover:text-[#dbae6b] transition-colors"
+                >
                   Portofolio Proyek
                 </Link>
               </li>
               <li>
-                <Link href="#kontak-kami" className="hover:text-[#dbae6b] transition-colors">
+                <Link
+                  href="#kontak-kami"
+                  className="hover:text-[#dbae6b] transition-colors"
+                >
                   Kontak
                 </Link>
               </li>
@@ -114,11 +134,11 @@ export default function Footer() {
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 gap-4">
           <p>{footer.copyrightText}</p>
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Link href="/admin" className="hover:text-[#dbae6b] transition-colors">
               Admin CMS Panel
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>

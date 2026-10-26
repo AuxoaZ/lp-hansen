@@ -33,7 +33,7 @@ export default function PortofolioPage() {
         <PortfolioGallery />
 
         {/* Bersama Mewujudkan Section */}
-        <PortfolioBanner />
+        {/* <PortfolioBanner /> */}
 
         {/* Call to Action Section */}
         <CTA />

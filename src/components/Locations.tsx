@@ -23,7 +23,13 @@ export default function Locations() {
           <div className="w-16 h-[2px] bg-[#dbae6b] mx-auto mt-4"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div
+          className={`grid grid-cols-1 gap-8 ${
+            locations.items?.length === 2
+              ? "md:grid-cols-2 max-w-4xl mx-auto"
+              : "md:grid-cols-3"
+          }`}
+        >
           {locations.items.map((loc, idx) => (
             <div
               key={idx}
