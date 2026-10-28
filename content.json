@@ -63,25 +63,25 @@
       "viewAllText": "Lihat Semua Layanan",
       "items": [
         {
-          "title": "Desain Interior",
+          "title": "Custom Furniture",
           "description": "Konsep, perencanaan, dan pengembangan desain yang detail.",
           "image": "/services/interior.jpg",
           "link": "/layanan"
         },
         {
-          "title": "Desain & Konstruksi",
+          "title": "Custom Interior",
           "description": "Dari konsep awal hingga realisasi akhir.",
           "image": "/services/construction.jpg",
           "link": "/layanan"
         },
         {
-          "title": "Konstruksi & Fit Out",
+          "title": "Smart Storage Solutions",
           "description": "Pelaksanaan profesional untuk ruang komersial dan residensial.",
           "image": "/services/fitout.jpg",
           "link": "/layanan"
         },
         {
-          "title": "Furnitur Kustom",
+          "title": "Konsultasi & Desain Ruang",
           "description": "Solusi furnitur yang disesuaikan dengan kebutuhan proyek Anda.",
           "image": "/services/furniture.jpg",
           "link": "/layanan"
