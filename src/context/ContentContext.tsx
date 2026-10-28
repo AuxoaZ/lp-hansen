@@ -24,9 +24,14 @@ interface ContentContextType {
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
 
-export function ContentProvider({ children }: { children: React.ReactNode }) {
-  const [content, setContent] = useState<SiteContent>(initialContent);
-  const [loading, setLoading] = useState<boolean>(true);
+export interface ContentProviderProps {
+  children: React.ReactNode;
+  initialData?: SiteContent;
+}
+
+export function ContentProvider({ children, initialData }: ContentProviderProps) {
+  const [content, setContent] = useState<SiteContent>(initialData || initialContent);
+  const [loading, setLoading] = useState<boolean>(!initialData);
   const [saving, setSaving] = useState<boolean>(false);
 
   const [githubConfig, setGithubConfig] = useState<GitHubConfig>({
@@ -106,7 +111,10 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    reloadContent();
+    // If initialData was supplied by server, do not reload unless custom config was set (e.g. in Admin)
+    if (!initialData || githubConfig.owner) {
+      reloadContent();
+    }
   }, [githubConfig.owner, githubConfig.repo, githubConfig.branch, githubConfig.path]);
 
   const updateContent = (newContent: SiteContent) => {

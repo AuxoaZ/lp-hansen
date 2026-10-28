@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { initialContent, SiteContent } from "@/data/initialContent";
 
 // In-memory cache for fallback when GitHub API is not configured locally
@@ -37,6 +38,21 @@ export async function GET(request: Request) {
     } catch (err) {
       console.error("Failed to fetch content from GitHub:", err);
     }
+  }
+
+  // Fallback to local content.json file if available
+  try {
+    const fs = await import("fs/promises");
+    const pathModule = await import("path");
+    const localFilePath = pathModule.join(process.cwd(), path);
+    const fileData = await fs.readFile(localFilePath, "utf-8");
+    return NextResponse.json({
+      success: true,
+      content: JSON.parse(fileData),
+      source: "local-file",
+    });
+  } catch (err) {
+    // ignore and fallback to inMemoryContent
   }
 
   return NextResponse.json({
@@ -135,6 +151,23 @@ export async function POST(request: Request) {
     }
 
     const resultData = await putRes.json();
+
+    // Also update local content.json on disk if available
+    try {
+      const fs = await import("fs/promises");
+      const pathModule = await import("path");
+      const localFilePath = pathModule.join(process.cwd(), path);
+      await fs.writeFile(localFilePath, jsonString, "utf-8");
+    } catch (e) {
+      // Ignored in read-only serverless environments
+    }
+
+    // Revalidate Next.js cache
+    try {
+      revalidatePath("/", "layout");
+    } catch (e) {
+      console.log("Revalidation error:", e);
+    }
 
     return NextResponse.json({
       success: true,

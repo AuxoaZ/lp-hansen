@@ -228,10 +228,10 @@ export const initialContent: SiteContent = {
   },
   home: {
     hero: {
-      badge: "DESAIN INTERIOR & BUILD",
-      title: "WUJUDKAN RUANG IMPIAN ANDA BERSAMA HANSEN PROJECTS.",
+      badge: "CUSTOM FURNITURE & INTERIOR",
+      title: "WUJUDKAN RUANGAN YANG LEBIH BAIK, BERSAMA HANSEN PROJECTS",
       description:
-        "Dari konsep, desain, hingga proses pengerjaan, kami menghadirkan solusi interior terintegrasi yang disesuaikan dengan kebutuhan Anda.",
+        "Furnitur custom yang dirancang sesuai kebutuhan, ukuran ruang, dan gaya hunian Anda. Dari sudut kecil hingga setiap ruang yang ingin Anda maksimalkan.",
       bgImage: "/background.jpg",
       ctaPrimaryText: "KONSULTASI BERSAMA KAMI",
       ctaPrimaryLink: "#kontak-kami",

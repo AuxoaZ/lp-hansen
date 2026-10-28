@@ -90,18 +90,22 @@ export const metadata: Metadata = {
     : {}),
 };
 
-export default function RootLayout({
+import { getSiteContent } from "@/lib/getContent";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = await getSiteContent();
+
   return (
     <html lang="id" className={`${cormorant.variable} ${poppins.variable} h-full antialiased`}>
       <head>
         <StructuredData type="all" />
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        <ContentProvider>{children}</ContentProvider>
+        <ContentProvider initialData={content}>{children}</ContentProvider>
       </body>
     </html>
   );
