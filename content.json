@@ -64,25 +64,25 @@
       "items": [
         {
           "title": "Custom Furniture",
-          "description": "Konsep, perencanaan, dan pengembangan desain yang detail.",
+          "description": "Layanan pembuatan furnitur sesuai ukuran ruang, kebutuhan penyimpanan, dan gaya interior",
           "image": "/services/interior.jpg",
           "link": "/layanan"
         },
         {
           "title": "Custom Interior",
-          "description": "Dari konsep awal hingga realisasi akhir.",
+          "description": "Solusi penataan interior yang mengintegrasikan furnitur, penyimpanan, material, dan tampilan ruang agar terasa menyatu",
           "image": "/services/construction.jpg",
           "link": "/layanan"
         },
         {
           "title": "Smart Storage Solutions",
-          "description": "Pelaksanaan profesional untuk ruang komersial dan residensial.",
+          "description": "Solusi penyimpanan yang memaksimalkan ruang, terutama untuk rumah dan apartemen dengan luas terbatas",
           "image": "/services/fitout.jpg",
           "link": "/layanan"
         },
         {
           "title": "Konsultasi & Desain Ruang",
-          "description": "Solusi furnitur yang disesuaikan dengan kebutuhan proyek Anda.",
+          "description": "Bantuan menentukan konsep, ukuran, tata letak, dan kebutuhan furnitur sebelum proses produksi dimulai",
           "image": "/services/furniture.jpg",
           "link": "/layanan"
         }
