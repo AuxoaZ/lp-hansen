@@ -35,7 +35,7 @@
       "description": "Furnitur custom yang dirancang sesuai kebutuhan, ukuran ruang, dan gaya hunian Anda. Dari sudut kecil hingga setiap ruang yang ingin Anda maksimalkan",
       "bgImage": "/background.jpg",
       "ctaPrimaryText": "KONSULTASI BERSAMA KAMI",
-      "ctaPrimaryLink": "#kontak-kami",
+      "ctaPrimaryLink": "https://api.whatsapp.com/send/?phone=6281315163886",
       "ctaSecondaryText": "LIHAT PROYEK KAMI",
       "ctaSecondaryLink": "/portofolio",
       "features": [
