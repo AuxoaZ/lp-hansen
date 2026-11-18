@@ -16,6 +16,22 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## CMS security and storage
+
+Set these variables in the server environment (for example, Vercel Project Settings). Do not prefix secrets with `NEXT_PUBLIC_` and do not enter a GitHub token in the browser:
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `ADMIN_PASSWORD` | Yes | Password used to sign in to `/admin`. |
+| `ADMIN_SESSION_SECRET` | Yes | Random secret of at least 32 bytes used to sign admin sessions. |
+| `GITHUB_PAT` | Yes in production | GitHub token with permission to read and update the content file. |
+| `GITHUB_OWNER` | Yes in production | GitHub account or organization that owns the repository. |
+| `GITHUB_REPO` | Yes in production | Repository containing the content file. |
+| `GITHUB_BRANCH` | No | Branch to update; defaults to `main`. |
+| `GITHUB_PATH` | No | Safe repository-relative content path; defaults to `content.json`. |
+
+For example, generate a session secret with `openssl rand -base64 48`. Production content changes are stored in GitHub. Local development can read and write the validated content file when GitHub storage variables are not set. Production requests fail closed if persistent GitHub storage is not configured.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

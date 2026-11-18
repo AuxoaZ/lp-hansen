@@ -1,4 +1,5 @@
 export interface SiteContent {
+  articles?: Article[];
   branding: {
     siteName: string;
     siteTagline: string;
@@ -211,6 +212,21 @@ export interface SiteContent {
   };
 }
 
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  category: string;
+  coverImage: string;
+  author: string;
+  publishedAt: string;
+  status: "draft" | "published";
+  body: string;
+  seoTitle: string;
+  seoDescription: string;
+}
+
 export const initialContent: SiteContent = {
   branding: {
     siteName: "Hansen",
@@ -221,6 +237,7 @@ export const initialContent: SiteContent = {
       { label: "Tentang Kami", url: "/tentang-kami" },
       { label: "Layanan", url: "/layanan" },
       { label: "Portofolio", url: "/portofolio" },
+      { label: "Artikel", url: "/artikel" },
       { label: "Kontak", url: "#kontak-kami" },
     ],
     contactButtonText: "HUBUNGI KAMI",
