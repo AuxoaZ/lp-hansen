@@ -1,190 +1,146 @@
 import { NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { initialContent, SiteContent } from "@/data/initialContent";
+import { initialContent } from "@/data/initialContent";
+import { hasAdminSession, isSameOriginRequest } from "@/lib/adminAuth";
+import {
+  getGitHubContentConfig,
+  getGitHubContentFileUrl,
+  getLocalContentPath,
+} from "@/lib/getContent";
+import fs from "fs/promises";
 
-// In-memory cache for fallback when GitHub API is not configured locally
-let inMemoryContent: SiteContent = initialContent;
+const noStoreHeaders = { "Cache-Control": "no-store, max-age=0" };
+
+function unauthorized() {
+  return NextResponse.json({ success: false, message: "Autentikasi admin diperlukan." }, { status: 401, headers: noStoreHeaders });
+}
+
+function storageUnavailable(message: string) {
+  return NextResponse.json({ success: false, message }, { status: 503, headers: noStoreHeaders });
+}
+
+async function readLocalContent() {
+  const contentPath = getLocalContentPath(process.env.GITHUB_PATH || "content.json");
+  const raw = await fs.readFile(contentPath, "utf-8");
+  return JSON.parse(raw);
+}
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const pat = searchParams.get("pat") || process.env.GITHUB_PAT || process.env.NEXT_PUBLIC_GITHUB_PAT;
-  const owner = searchParams.get("owner") || process.env.GITHUB_OWNER || process.env.NEXT_PUBLIC_GITHUB_OWNER;
-  const repo = searchParams.get("repo") || process.env.GITHUB_REPO || process.env.NEXT_PUBLIC_GITHUB_REPO;
-  const branch = searchParams.get("branch") || process.env.GITHUB_BRANCH || process.env.NEXT_PUBLIC_GITHUB_BRANCH || "main";
-  const path = searchParams.get("path") || process.env.GITHUB_PATH || process.env.NEXT_PUBLIC_GITHUB_PATH || "content.json";
+  if (!hasAdminSession(request)) return unauthorized();
 
-  if (pat && owner && repo) {
-    try {
-      const ghUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
-      const res = await fetch(ghUrl, {
-        headers: {
-          Authorization: `Bearer ${pat}`,
-          Accept: "application/vnd.github.v3+json",
-        },
-        cache: "no-store",
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const jsonString = Buffer.from(data.content, "base64").toString("utf-8");
-        const parsedContent = JSON.parse(jsonString);
-        return NextResponse.json({
-          success: true,
-          content: parsedContent,
-          sha: data.sha,
-          source: "github",
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch content from GitHub:", err);
-    }
-  }
-
-  // Fallback to local content.json file if available
   try {
-    const fs = await import("fs/promises");
-    const pathModule = await import("path");
-    const localFilePath = pathModule.join(process.cwd(), path);
-    const fileData = await fs.readFile(localFilePath, "utf-8");
-    return NextResponse.json({
-      success: true,
-      content: JSON.parse(fileData),
-      source: "local-file",
-    });
-  } catch (err) {
-    // ignore and fallback to inMemoryContent
-  }
+    const config = getGitHubContentConfig();
+    if (!config) {
+      if (process.env.NODE_ENV === "production") {
+        return storageUnavailable("Penyimpanan CMS belum dikonfigurasi di server.");
+      }
+      return NextResponse.json({ success: true, content: await readLocalContent(), source: "local-file" }, { headers: noStoreHeaders });
+    }
 
-  return NextResponse.json({
-    success: true,
-    content: inMemoryContent,
-    source: "local",
-  });
+    const res = await fetch(getGitHubContentFileUrl(config), {
+      headers: { Authorization: `Bearer ${config.pat}`, Accept: "application/vnd.github.raw+json" },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return NextResponse.json({ success: false, message: `Gagal membaca konten GitHub (${res.status}).` }, { status: 502, headers: noStoreHeaders });
+    }
+
+    const content = JSON.parse(await res.text());
+    return NextResponse.json({ success: true, content, source: "github" }, { headers: noStoreHeaders });
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      try {
+        return NextResponse.json({ success: true, content: await readLocalContent(), source: "local-file" }, { headers: noStoreHeaders });
+      } catch {
+        // A missing local file falls through to the configuration error below.
+      }
+    }
+    const message = error instanceof Error ? error.message : "Konfigurasi penyimpanan tidak valid.";
+    return storageUnavailable(message);
+  }
 }
 
 export async function POST(request: Request) {
+  if (!hasAdminSession(request)) return unauthorized();
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ success: false, message: "Permintaan lintas origin ditolak." }, { status: 403, headers: noStoreHeaders });
+  }
+
   try {
     const body = await request.json();
-    let { content, config, syncInitial } = body;
-
-    if (syncInitial || !content) {
-      content = initialContent;
-    }
-
-    const pat = config?.pat || process.env.GITHUB_PAT || process.env.NEXT_PUBLIC_GITHUB_PAT;
-    const owner = config?.owner || process.env.GITHUB_OWNER || process.env.NEXT_PUBLIC_GITHUB_OWNER;
-    const repo = config?.repo || process.env.GITHUB_REPO || process.env.NEXT_PUBLIC_GITHUB_REPO;
-    const branch = config?.branch || process.env.GITHUB_BRANCH || process.env.NEXT_PUBLIC_GITHUB_BRANCH || "main";
-    const path = config?.path || process.env.GITHUB_PATH || process.env.NEXT_PUBLIC_GITHUB_PATH || "content.json";
-
-    // Update in-memory fallback first
-    inMemoryContent = content;
-
-    if (!pat || !owner || !repo) {
-      return NextResponse.json({
-        success: true,
-        message: "Data tersimpan di memori lokal (Konfigurasi GitHub PAT belum diisi lengkap).",
-        source: "local",
-        content: inMemoryContent,
-      });
-    }
-
-    const ghUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-    
-    // First GET file to obtain SHA if exists
-    let sha: string | undefined = undefined;
-    try {
-      const getRes = await fetch(`${ghUrl}?ref=${branch}`, {
-        headers: {
-          Authorization: `Bearer ${pat}`,
-          Accept: "application/vnd.github.v3+json",
-        },
-        cache: "no-store",
-      });
-      if (getRes.ok) {
-        const getData = await getRes.json();
-        sha = getData.sha;
+    let content = body?.content;
+    if (body?.syncInitial === true) {
+      if (!Array.isArray(body.articles)) {
+        return NextResponse.json({ success: false, message: "Artikel harus disertakan saat sinkronisasi default." }, { status: 400, headers: noStoreHeaders });
       }
-    } catch (err) {
-      console.log("File not found or new file on GitHub:", err);
+      content = { ...initialContent, articles: body.articles };
+    }
+    if (!content || typeof content !== "object" || Array.isArray(content)) {
+      return NextResponse.json({ success: false, message: "Format konten tidak valid." }, { status: 400, headers: noStoreHeaders });
     }
 
-    // Convert content object to Base64 encoded string
+    const config = getGitHubContentConfig();
+    if (!config) {
+      if (process.env.NODE_ENV === "production") {
+        return storageUnavailable("Penyimpanan CMS belum dikonfigurasi di server.");
+      }
+      const contentPath = getLocalContentPath(process.env.GITHUB_PATH || "content.json");
+      await fs.writeFile(contentPath, JSON.stringify(content, null, 2), "utf-8");
+      revalidateAfterSave();
+      return NextResponse.json({ success: true, message: "Konten tersimpan di file lokal development.", source: "local-file" }, { headers: noStoreHeaders });
+    }
+
+    const fileUrl = getGitHubContentFileUrl(config, false);
+    const currentFileResponse = await fetch(getGitHubContentFileUrl(config), {
+      headers: { Authorization: `Bearer ${config.pat}`, Accept: "application/vnd.github.v3+json" },
+      cache: "no-store",
+    });
+    let sha: string | undefined;
+    if (currentFileResponse.ok) {
+      const file = await currentFileResponse.json();
+      sha = file.sha;
+    } else if (currentFileResponse.status !== 404) {
+      return NextResponse.json({ success: false, message: `Gagal membaca file GitHub sebelum menyimpan (${currentFileResponse.status}).` }, { status: 502, headers: noStoreHeaders });
+    }
+
     const jsonString = JSON.stringify(content, null, 2);
-    const base64Content = Buffer.from(jsonString, "utf-8").toString("base64");
-
-    const payload: {
-      message: string;
-      content: string;
-      branch: string;
-      sha?: string;
-    } = {
-      message: `Update CMS content via Hansen Admin (${new Date().toISOString()})`,
-      content: base64Content,
-      branch: branch,
-    };
-
-    if (sha) {
-      payload.sha = sha;
-    }
-
-    const putRes = await fetch(ghUrl, {
+    const response = await fetch(fileUrl, {
       method: "PUT",
       headers: {
-        Authorization: `Bearer ${pat}`,
+        Authorization: `Bearer ${config.pat}`,
         Accept: "application/vnd.github.v3+json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        message: `Update CMS content via Hansen Admin (${new Date().toISOString()})`,
+        content: Buffer.from(jsonString, "utf-8").toString("base64"),
+        branch: config.branch,
+        ...(sha ? { sha } : {}),
+      }),
     });
 
-    if (!putRes.ok) {
-      const errorData = await putRes.json();
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Gagal menyimpan ke GitHub: ${errorData.message || putRes.statusText}`,
-          error: errorData,
-        },
-        { status: putRes.status }
-      );
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      const message = typeof errorData?.message === "string" ? errorData.message : response.statusText;
+      return NextResponse.json({ success: false, message: `Gagal menyimpan ke GitHub: ${message}` }, { status: 502, headers: noStoreHeaders });
     }
 
-    const resultData = await putRes.json();
+    revalidateAfterSave();
+    const result = await response.json();
+    return NextResponse.json({ success: true, message: "Berhasil memperbarui file konten di GitHub.", sha: result.content?.sha, source: "github" }, { headers: noStoreHeaders });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan konten.";
+    return NextResponse.json({ success: false, message }, { status: 500, headers: noStoreHeaders });
+  }
+}
 
-    // Also update local content.json on disk if available
-    try {
-      const fs = await import("fs/promises");
-      const pathModule = await import("path");
-      const localFilePath = pathModule.join(process.cwd(), path);
-      await fs.writeFile(localFilePath, jsonString, "utf-8");
-    } catch (e) {
-      // Ignored in read-only serverless environments
-    }
-
-    // Revalidate content used by public pages and article metadata.
-    try {
-      revalidateTag("site-content", { expire: 0 });
-      revalidatePath("/", "layout");
-      revalidatePath("/artikel");
-      revalidatePath("/sitemap.xml");
-    } catch (e) {
-      console.log("Revalidation error:", e);
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Berhasil memperbarui file JSON di GitHub repository!",
-      sha: resultData.content?.sha,
-      source: "github",
-    });
-  } catch (error: any) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: `Terjadi kesalahan saat menyimpan: ${error.message || "Unknown error"}`,
-      },
-      { status: 500 }
-    );
+function revalidateAfterSave() {
+  try {
+    revalidateTag("site-content", { expire: 0 });
+    revalidatePath("/", "layout");
+    revalidatePath("/artikel");
+    revalidatePath("/sitemap.xml");
+  } catch (error) {
+    console.error("Content cache revalidation failed:", error);
   }
 }

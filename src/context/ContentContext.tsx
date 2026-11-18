@@ -1,25 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { initialContent, SiteContent } from "@/data/initialContent";
-
-export interface GitHubConfig {
-  pat: string;
-  owner: string;
-  repo: string;
-  branch: string;
-  path: string;
-}
 
 interface ContentContextType {
   content: SiteContent;
   loading: boolean;
   saving: boolean;
-  githubConfig: GitHubConfig;
-  setGithubConfig: React.Dispatch<React.SetStateAction<GitHubConfig>>;
   updateContent: (newContent: SiteContent) => void;
-  saveToGitHub: (customContent?: SiteContent, customConfig?: GitHubConfig) => Promise<{ success: boolean; message: string }>;
-  reloadContent: () => Promise<void>;
+  saveToGitHub: (customContent?: SiteContent) => Promise<{ success: boolean; message: string }>;
+  reloadContent: () => Promise<{ success: boolean; message?: string }>;
 }
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
@@ -34,30 +24,16 @@ export function ContentProvider({ children, initialData }: ContentProviderProps)
   const [loading, setLoading] = useState<boolean>(!initialData);
   const [saving, setSaving] = useState<boolean>(false);
 
-  const [githubConfig, setGithubConfig] = useState<GitHubConfig>({
-    pat: "",
-    owner: "",
-    repo: "",
-    branch: "main",
-    path: "content.json",
-  });
-
-  const reloadContent = async () => {
+  const reloadContent = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (githubConfig.pat) params.append("pat", githubConfig.pat);
-      if (githubConfig.owner) params.append("owner", githubConfig.owner);
-      if (githubConfig.repo) params.append("repo", githubConfig.repo);
-      if (githubConfig.branch) params.append("branch", githubConfig.branch);
-      if (githubConfig.path) params.append("path", githubConfig.path);
-
-      const res = await fetch(`/api/content?${params.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.content) {
-          // Deep merge or set content with initialContent fallback
-          setContent({
+      const res = await fetch("/api/content", { cache: "no-store", credentials: "same-origin" });
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.content || typeof data.content !== "object") {
+        return { success: false, message: data.message || "Konten CMS gagal dimuat dari server." };
+      }
+      // Deep merge or set content with initialContent fallback
+      setContent({
             ...initialContent,
             ...data.content,
             branding: { ...initialContent.branding, ...(data.content.branding || {}) },
@@ -100,31 +76,31 @@ export function ContentProvider({ children, initialData }: ContentProviderProps)
               experience: { ...initialContent.tentangKamiPage.experience, ...(data.content.tentangKamiPage?.experience || {}) },
             },
             footer: { ...initialContent.footer, ...(data.content.footer || {}) },
-          });
-        }
-      }
+      });
+      return { success: true };
     } catch (err) {
       console.error("Error reloading content:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Konten CMS gagal dimuat." };
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // If initialData was supplied by server, do not reload unless custom config was set (e.g. in Admin)
-    if (!initialData || githubConfig.owner) {
-      reloadContent();
+    if (!initialData) {
+      const timeout = window.setTimeout(() => { void reloadContent(); }, 0);
+      return () => window.clearTimeout(timeout);
     }
-  }, [githubConfig.owner, githubConfig.repo, githubConfig.branch, githubConfig.path]);
+    return undefined;
+  }, [initialData, reloadContent]);
 
-  const updateContent = (newContent: SiteContent) => {
+  const updateContent = useCallback((newContent: SiteContent) => {
     setContent(newContent);
-  };
+  }, []);
 
-  const saveToGitHub = async (customContent?: SiteContent, customConfig?: GitHubConfig) => {
+  const saveToGitHub = useCallback(async (customContent?: SiteContent) => {
     setSaving(true);
     const contentToSave = customContent || content;
-    const configToUse = customConfig || githubConfig;
 
     try {
       const res = await fetch("/api/content", {
@@ -132,10 +108,8 @@ export function ContentProvider({ children, initialData }: ContentProviderProps)
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          content: contentToSave,
-          config: configToUse,
-        }),
+        credentials: "same-origin",
+        body: JSON.stringify({ content: contentToSave }),
       });
 
       const data = await res.json();
@@ -144,12 +118,12 @@ export function ContentProvider({ children, initialData }: ContentProviderProps)
       } else {
         return { success: false, message: data.message || "Gagal menyimpan." };
       }
-    } catch (err: any) {
-      return { success: false, message: err.message || "Terjadi kesalahan koneksi." };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : "Terjadi kesalahan koneksi." };
     } finally {
       setSaving(false);
     }
-  };
+  }, [content]);
 
   return (
     <ContentContext.Provider
@@ -157,8 +131,6 @@ export function ContentProvider({ children, initialData }: ContentProviderProps)
         content,
         loading,
         saving,
-        githubConfig,
-        setGithubConfig,
         updateContent,
         saveToGitHub,
         reloadContent,

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { useContent, GitHubConfig } from "@/context/ContentContext";
+import { useContent } from "@/context/ContentContext";
 import ImagePicker from "@/components/admin/ImagePicker";
 import ArticlesManager from "@/components/admin/ArticlesManager";
 import { SiteContent } from "@/data/initialContent";
@@ -10,7 +10,6 @@ import {
   FiLock,
   FiSave,
   FiRefreshCw,
-  FiGithub,
   FiGlobe,
   FiLayout,
   FiHome,
@@ -33,8 +32,6 @@ export default function AdminPage() {
     updateContent,
     saveToGitHub,
     reloadContent,
-    githubConfig,
-    setGithubConfig,
     loading,
     saving,
   } = useContent();
@@ -110,15 +107,25 @@ export default function AdminPage() {
     }, 4000);
   };
 
-  // Check auth session on mount
+  // Ask the server whether the HttpOnly session cookie is valid.
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const authSession = sessionStorage.getItem("hansen_admin_token");
-      if (authSession) {
-        setIsAuthenticated(true);
+    let cancelled = false;
+    const checkSession = async () => {
+      try {
+        const response = await fetch("/api/admin/auth", { cache: "no-store", credentials: "same-origin" });
+        const data = await response.json();
+        if (!cancelled && response.ok && data.authenticated) {
+          const loaded = await reloadContent();
+          if (!cancelled && loaded.success) setIsAuthenticated(true);
+          else if (!cancelled) setLoginError(loaded.message || "Konten CMS gagal dimuat.");
+        }
+      } catch {
+        // A failed session check leaves the login form visible.
       }
-    }
-  }, []);
+    };
+    void checkSession();
+    return () => { cancelled = true; };
+  }, [reloadContent]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,26 +136,33 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({ password: passwordInput }),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
-        sessionStorage.setItem("hansen_admin_token", data.token);
-        setIsAuthenticated(true);
-        showToast("Selamat datang di Admin CMS Hansen Projects!", "success");
+        setPasswordInput("");
+        const loaded = await reloadContent();
+        if (loaded.success) {
+          setIsAuthenticated(true);
+          showToast("Selamat datang di Admin CMS Hansen Projects!", "success");
+        } else {
+          setLoginError(loaded.message || "Konten CMS gagal dimuat.");
+        }
       } else {
         setLoginError(data.message || "Password salah, silakan coba lagi.");
       }
-    } catch (err) {
+    } catch {
       setLoginError("Terjadi kesalahan koneksi server.");
     } finally {
       setLoginLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("hansen_admin_token");
+  const handleLogout = async () => {
+    await fetch("/api/admin/auth", { method: "DELETE", credentials: "same-origin" }).catch(() => undefined);
+    updateContent({ ...content, articles: (content.articles || []).filter((article) => article.status === "published") });
     setIsAuthenticated(false);
   };
 
@@ -164,30 +178,32 @@ export default function AdminPage() {
   const handleSyncInitial = async () => {
     if (
       confirm(
-        "Apakah Anda yakin ingin menyinkronkan seluruh konten website kembali ke data default kode? Perubahan yang ada di CMS akan digantikan dengan data kode awal."
+        "Apakah Anda yakin ingin mengembalikan konten website ke data default kode? Artikel yang sudah ada akan tetap dipertahankan."
       )
     ) {
       try {
         const res = await fetch("/api/content", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ syncInitial: true }),
+          credentials: "same-origin",
+          body: JSON.stringify({ syncInitial: true, articles: content.articles || [] }),
         });
         const data = await res.json();
         if (data.success) {
-          await reloadContent();
-          showToast("Konten berhasil disinkronkan ke kode default!", "success");
+          const loaded = await reloadContent();
+          if (loaded.success) showToast("Konten berhasil disinkronkan ke kode default!", "success");
+          else showToast(loaded.message || "Konten tersimpan, tetapi gagal dimuat ulang.", "error");
         } else {
           showToast(data.message || "Gagal sinkronisasi.", "error");
         }
-      } catch (err: any) {
-        showToast(err.message || "Gagal sinkronisasi.", "error");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Gagal sinkronisasi.", "error");
       }
     }
   };
 
   // Helper mutation functions
-  const updateBranding = (key: keyof SiteContent["branding"], value: any) => {
+  const updateBranding = <Key extends keyof SiteContent["branding"]>(key: Key, value: SiteContent["branding"][Key]) => {
     updateContent({
       ...content,
       branding: {
@@ -197,7 +213,7 @@ export default function AdminPage() {
     });
   };
 
-  const updateHome = (key: keyof SiteContent["home"], value: any) => {
+  const updateHome = <Key extends keyof SiteContent["home"]>(key: Key, value: SiteContent["home"][Key]) => {
     updateContent({
       ...content,
       home: {
@@ -207,9 +223,9 @@ export default function AdminPage() {
     });
   };
 
-  const updateLayananPage = (
-    key: keyof SiteContent["layananPage"],
-    value: any,
+  const updateLayananPage = <Key extends keyof SiteContent["layananPage"]>(
+    key: Key,
+    value: SiteContent["layananPage"][Key],
   ) => {
     updateContent({
       ...content,
@@ -220,9 +236,9 @@ export default function AdminPage() {
     });
   };
 
-  const updatePortofolioPage = (
-    key: keyof SiteContent["portofolioPage"],
-    value: any,
+  const updatePortofolioPage = <Key extends keyof SiteContent["portofolioPage"]>(
+    key: Key,
+    value: SiteContent["portofolioPage"][Key],
   ) => {
     updateContent({
       ...content,
@@ -233,9 +249,9 @@ export default function AdminPage() {
     });
   };
 
-  const updateTentangKamiPage = (
-    key: keyof SiteContent["tentangKamiPage"],
-    value: any,
+  const updateTentangKamiPage = <Key extends keyof SiteContent["tentangKamiPage"]>(
+    key: Key,
+    value: SiteContent["tentangKamiPage"][Key],
   ) => {
     updateContent({
       ...content,
@@ -246,7 +262,7 @@ export default function AdminPage() {
     });
   };
 
-  const updateFooter = (key: keyof SiteContent["footer"], value: any) => {
+  const updateFooter = <Key extends keyof SiteContent["footer"]>(key: Key, value: SiteContent["footer"][Key]) => {
     updateContent({
       ...content,
       footer: {
@@ -378,17 +394,10 @@ export default function AdminPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-2 bg-[#001730] px-3 py-1.5 rounded-full border border-white/10 text-[11px]">
-            {githubConfig.pat && githubConfig.owner && githubConfig.repo ? (
-              <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                GitHub Connected ({githubConfig.owner}/{githubConfig.repo})
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-amber-400 font-medium">
-                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                Mode Lokal (Isi PAT di Tab GitHub)
-              </span>
-            )}
+            <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Koneksi GitHub dikelola server
+            </span>
           </div>
         </div>
 
@@ -544,127 +553,11 @@ export default function AdminPage() {
           {activeTab === "artikel" && <ArticlesManager />}
           {/* TAB 1: GITHUB CONFIG */}
           {activeTab === "github" && (
-            <div className="max-w-3xl space-y-6">
-              <div>
-                <h2 className="text-2xl font-serif font-bold text-[#dbae6b]">
-                  Konfigurasi GitHub PAT Classic
-                </h2>
-                <p className="text-xs text-gray-400 mt-1">
-                  Masukkan GitHub Personal Access Token (PAT) Classic dan
-                  informasi repository untuk sinkronisasi otomatis file JSON.
-                </p>
-              </div>
-
-              <div className="bg-[#0b1728] border border-[#dbae6b]/20 p-6 rounded-xl space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#dbae6b] mb-2">
-                    GitHub Personal Access Token (PAT Classic) *
-                  </label>
-                  <input
-                    type="password"
-                    value={githubConfig.pat}
-                    onChange={(e) =>
-                      setGithubConfig({ ...githubConfig, pat: e.target.value })
-                    }
-                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxx"
-                    className="w-full bg-[#001730] border border-[#dbae6b]/30 focus:border-[#dbae6b] text-white text-xs px-3.5 py-2.5 rounded-lg focus:outline-none"
-                  />
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    Membutuhkan scope{" "}
-                    <code className="text-[#dbae6b]">repo</code> untuk melakukan
-                    commit file JSON.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
-                      Repository Owner (Username / Org) *
-                    </label>
-                    <input
-                      type="text"
-                      value={githubConfig.owner}
-                      onChange={(e) =>
-                        setGithubConfig({
-                          ...githubConfig,
-                          owner: e.target.value,
-                        })
-                      }
-                      placeholder="contoh: hansen-user"
-                      className="w-full bg-[#001730] border border-[#dbae6b]/30 focus:border-[#dbae6b] text-white text-xs px-3.5 py-2.5 rounded-lg focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
-                      Repository Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={githubConfig.repo}
-                      onChange={(e) =>
-                        setGithubConfig({
-                          ...githubConfig,
-                          repo: e.target.value,
-                        })
-                      }
-                      placeholder="contoh: lp-hansen"
-                      className="w-full bg-[#001730] border border-[#dbae6b]/30 focus:border-[#dbae6b] text-white text-xs px-3.5 py-2.5 rounded-lg focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
-                      Branch Name
-                    </label>
-                    <input
-                      type="text"
-                      value={githubConfig.branch}
-                      onChange={(e) =>
-                        setGithubConfig({
-                          ...githubConfig,
-                          branch: e.target.value,
-                        })
-                      }
-                      placeholder="main"
-                      className="w-full bg-[#001730] border border-[#dbae6b]/30 focus:border-[#dbae6b] text-white text-xs px-3.5 py-2.5 rounded-lg focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">
-                      Path File JSON
-                    </label>
-                    <input
-                      type="text"
-                      value={githubConfig.path}
-                      onChange={(e) =>
-                        setGithubConfig({
-                          ...githubConfig,
-                          path: e.target.value,
-                        })
-                      }
-                      placeholder="content.json"
-                      className="w-full bg-[#001730] border border-[#dbae6b]/30 focus:border-[#dbae6b] text-white text-xs px-3.5 py-2.5 rounded-lg focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between border-t border-white/10">
-                  <span className="text-xs text-gray-400">
-                    Konfigurasi ini akan disimpan secara aman di browser Anda.
-                  </span>
-                  <button
-                    onClick={handleSaveAll}
-                    disabled={saving}
-                    className="bg-[#dbae6b] text-[#002044] font-bold text-xs px-5 py-2.5 rounded-lg hover:brightness-110 transition-all flex items-center gap-2"
-                  >
-                    <FiSave /> Uji & Simpan Koneksi
-                  </button>
-                </div>
-              </div>
+            <div className="max-w-3xl space-y-4">
+              <h2 className="text-2xl font-serif font-bold text-[#dbae6b]">Penyimpanan GitHub</h2>
+              <p className="rounded-xl border border-[#dbae6b]/20 bg-[#0b1728] p-6 text-sm leading-7 text-gray-300">
+                Token dan tujuan repository dikelola sebagai environment variable server. Atur GITHUB_PAT, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH, dan GITHUB_PATH di environment deployment; secret tidak lagi dimasukkan atau disimpan di browser.
+              </p>
             </div>
           )}
 
@@ -783,7 +676,7 @@ export default function AdminPage() {
                 ].map((sub) => (
                   <button
                     key={sub.id}
-                    onClick={() => setHomeSubTab(sub.id as any)}
+                    onClick={() => setHomeSubTab(sub.id as typeof homeSubTab)}
                     className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
                       homeSubTab === sub.id
                         ? "bg-[#dbae6b] text-[#002044]"
@@ -2159,7 +2052,7 @@ export default function AdminPage() {
                 ].map((sub) => (
                   <button
                     key={sub.id}
-                    onClick={() => setLayananSubTab(sub.id as any)}
+                    onClick={() => setLayananSubTab(sub.id as typeof layananSubTab)}
                     className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
                       layananSubTab === sub.id
                         ? "bg-[#dbae6b] text-[#002044]"
@@ -2565,7 +2458,7 @@ export default function AdminPage() {
                 ].map((sub) => (
                   <button
                     key={sub.id}
-                    onClick={() => setPortfolioSubTab(sub.id as any)}
+                    onClick={() => setPortfolioSubTab(sub.id as typeof portfolioSubTab)}
                     className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
                       portfolioSubTab === sub.id
                         ? "bg-[#dbae6b] text-[#002044]"
@@ -2994,7 +2887,7 @@ export default function AdminPage() {
                 ].map((sub) => (
                   <button
                     key={sub.id}
-                    onClick={() => setTentangSubTab(sub.id as any)}
+                    onClick={() => setTentangSubTab(sub.id as typeof tentangSubTab)}
                     className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
                       tentangSubTab === sub.id
                         ? "bg-[#dbae6b] text-[#002044]"

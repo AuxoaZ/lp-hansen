@@ -98,6 +98,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const content = await getSiteContent();
+  const publicContent = {
+    ...content,
+    articles: (content.articles || []).filter((article) => article.status === "published"),
+  };
 
   return (
     <html lang="id" className={`${cormorant.variable} ${poppins.variable} h-full antialiased`}>
@@ -105,7 +109,7 @@ export default async function RootLayout({
         <StructuredData type="all" />
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        <ContentProvider initialData={content}>{children}</ContentProvider>
+        <ContentProvider initialData={publicContent}>{children}</ContentProvider>
       </body>
     </html>
   );
