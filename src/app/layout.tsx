@@ -16,7 +16,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://hansenprojects.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.hansenprojects.id"),
   title: {
     default: "Hansen Projects | Desain Interior & Custom Furniture Berkualitas",
     template: "%s | Hansen Projects",

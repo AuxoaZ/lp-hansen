@@ -9,6 +9,9 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { content } = useContent();
   const branding = content.branding;
+  const navLinks = branding.navLinks.some((link) => link.url === "/artikel")
+    ? branding.navLinks
+    : [...branding.navLinks, { label: "Artikel", url: "/artikel" }];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,7 +50,7 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-6 text-xs font-medium">
-          {branding.navLinks.map((link, idx) => (
+          {navLinks.map((link, idx) => (
             <Link
               key={idx}
               href={link.url}

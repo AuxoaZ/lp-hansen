@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useContent, GitHubConfig } from "@/context/ContentContext";
 import ImagePicker from "@/components/admin/ImagePicker";
+import ArticlesManager from "@/components/admin/ArticlesManager";
 import { SiteContent } from "@/data/initialContent";
 import {
   FiLock,
@@ -54,6 +55,7 @@ export default function AdminPage() {
     | "portofolio"
     | "tentang"
     | "footer"
+    | "artikel"
   >("home");
 
   // Home Sub-Tab State
@@ -515,6 +517,17 @@ export default function AdminPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab("artikel")}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors text-left ${
+              activeTab === "artikel"
+                ? "bg-[#dbae6b] text-[#002044] font-bold shadow-md"
+                : "text-gray-300 hover:bg-[#001c3d] hover:text-white"
+            }`}
+          >
+            <FiLayers className="text-base shrink-0" /> Artikel & SEO
+          </button>
+
+          <button
             onClick={() => setActiveTab("footer")}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors text-left ${
               activeTab === "footer"
@@ -528,6 +541,7 @@ export default function AdminPage() {
 
         {/* Content Area */}
         <main className="flex-1 p-6 md:p-8 overflow-y-auto bg-[#070e17]">
+          {activeTab === "artikel" && <ArticlesManager />}
           {/* TAB 1: GITHUB CONFIG */}
           {activeTab === "github" && (
             <div className="max-w-3xl space-y-6">

@@ -162,9 +162,12 @@ export async function POST(request: Request) {
       // Ignored in read-only serverless environments
     }
 
-    // Revalidate Next.js cache
+    // Revalidate content used by public pages and article metadata.
     try {
+      revalidateTag("site-content", { expire: 0 });
       revalidatePath("/", "layout");
+      revalidatePath("/artikel");
+      revalidatePath("/sitemap.xml");
     } catch (e) {
       console.log("Revalidation error:", e);
     }
